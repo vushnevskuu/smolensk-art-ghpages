@@ -46,7 +46,7 @@
       transition: --bg 400ms ease, --text 400ms ease, --mid 400ms ease, --line 400ms ease;
     }
 
-    /* ── Листва: полноэкранное видео «Классика+» (leaves-generated.mp4) ── */
+    /* ── Листва: классическое видео leaves.mp4 (полноэкранно, cover, сверху) ── */
     #leaves-overlay {
       position: fixed;
       inset: 0;
@@ -265,11 +265,6 @@
 
     .leaves-toggle-wrap {
       margin-bottom: 28px;
-    }
-    .leaves-video-note {
-      margin: 8px 0 0;
-      font-size: 0.85rem;
-      opacity: 0.75;
     }
     .leaves-toggle-btn[aria-pressed="true"] {
       text-decoration: underline;
@@ -558,8 +553,7 @@
 
       <div class="leaves-toggle-wrap">
         <div class="section-title">Атмосфера</div>
-        <button type="button" class="video-btn leaves-toggle-btn" id="leaves-toggle-btn" aria-pressed="false">Листва: выкл</button>
-        <p class="leaves-video-note">Видео: Классика+</p>
+        <button type="button" class="video-btn leaves-toggle-btn" id="leaves-toggle-btn" aria-pressed="false">Включить листву</button>
       </div>
 
       <div class="paper-bg-wrap">
@@ -1136,7 +1130,7 @@
       if (!btn) return;
       const on = document.body.classList.contains('leaves');
       btn.setAttribute('aria-pressed', on ? 'true' : 'false');
-      btn.textContent = on ? 'Листва: вкл' : 'Листва: выкл';
+      btn.textContent = on ? 'Выключить листву' : 'Включить листву';
     }
 
     const PAPER_BG_STORAGE_KEY = 'smolenskPaperBg';
@@ -1296,7 +1290,7 @@
     })();
   </script>
 
-  <video id="leaves-overlay" src="leaves-generated.mp4" loop muted playsinline preload="none"></video>
+  <video id="leaves-overlay" src="leaves.mp4" loop muted playsinline preload="none"></video>
   <audio id="forest-audio" src="forest.mp3" loop preload="none"></audio>
   <video id="moon-overlay" src="moon.mp4" loop muted playsinline preload="none"></video>
   <audio id="night-audio" src="night_normalized.mp3" loop preload="none"></audio>
