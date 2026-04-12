@@ -1,0 +1,81 @@
+{
+  "id": "c4769dc1-e497-42d7-82ec-029797b7568a",
+  "message_id": 183,
+  "url": "https://remz2ktpzelelhx5.public.blob.vercel-storage.com/voice-1774439505189-c4769dc1-e497-42d7-82ec-029797b7568a-YXYacLaUBV3yFv1UrMZh1uuHzS2vw1.ogg",
+  "ts": 1774439505189,
+  "type": "voice",
+  "duration": 7,
+  "transcript": [
+    {
+      "word": "Привет",
+      "start": 0.02
+    },
+    {
+      "word": "всем!",
+      "start": 0.2
+    },
+    {
+      "word": "Добро",
+      "start": 1
+    },
+    {
+      "word": "пожаловать",
+      "start": 1.32
+    },
+    {
+      "word": "на",
+      "start": 1.56
+    },
+    {
+      "word": "мой",
+      "start": 1.7
+    },
+    {
+      "word": "личный",
+      "start": 2.18
+    },
+    {
+      "word": "сайт.",
+      "start": 2.86
+    },
+    {
+      "word": "Здесь",
+      "start": 3.5
+    },
+    {
+      "word": "подборка",
+      "start": 3.6
+    },
+    {
+      "word": "моих",
+      "start": 3.7
+    },
+    {
+      "word": "проектов,",
+      "start": 4.12
+    },
+    {
+      "word": "идей",
+      "start": 4.36
+    },
+    {
+      "word": "концептов,",
+      "start": 4.5
+    },
+    {
+      "word": "а",
+      "start": 5.36
+    },
+    {
+      "word": "также",
+      "start": 5.72
+    },
+    {
+      "word": "мыслей.",
+      "start": 6.12
+    }
+  ],
+  "transcriptText": " Привет всем! Добро пожаловать на мой личный сайт. Здесь подборка моих проектов, идей, концептов, а также мыслей.",
+  "featured": true,
+  "featured_ts": 1774485720464
+}
