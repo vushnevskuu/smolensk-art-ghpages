@@ -1,28 +1,15 @@
 {
-  "name": "ai-website-clone-template",
-  "version": "0.3.1",
+  "name": "smolensk-art-ghpages",
+  "version": "1.0.0",
   "private": true,
-  "description": "Clone any website into a clean, modern Next.js codebase using AI coding agents",
-  "author": "JCodesMore",
+  "description": "Смоленск Арт — статический сайт (Next.js, GitHub Pages)",
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/JCodesMore/ai-website-cloner-template.git"
+    "url": "https://github.com/vushnevskuu/smolensk-art-ghpages.git"
   },
-  "homepage": "https://github.com/JCodesMore/ai-website-cloner-template",
-  "bugs": {
-    "url": "https://github.com/JCodesMore/ai-website-cloner-template/issues"
-  },
-  "keywords": [
-    "claude-code",
-    "website-clone",
-    "reverse-engineering",
-    "nextjs",
-    "ai",
-    "template",
-    "tailwindcss",
-    "shadcn-ui"
-  ],
+  "homepage": "https://vushnevskuu.github.io/smolensk-art-ghpages/",
+  "keywords": ["smolensk", "nextjs", "github-pages"],
   "engines": {
     "node": ">=24"
   },
