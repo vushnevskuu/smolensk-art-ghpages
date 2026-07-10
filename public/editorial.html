@@ -95,7 +95,7 @@
       inset: 0 0 auto;
       height: var(--header-height);
       display: grid;
-      grid-template-columns: 1fr minmax(280px, 560px) 1fr;
+      grid-template-columns: 96px minmax(0, 1fr) 96px;
       align-items: center;
       gap: clamp(22px, 4vw, 64px);
       padding: 18px 32px;
@@ -114,17 +114,20 @@
     body.paper-beige .brand-logo { filter: none; }
     .brand-copy {
       justify-self: center;
-      width: min(560px, 100%);
+      width: min(1040px, 100%);
       text-align: center;
       font-size: 13px;
-      line-height: 1.3;
+      line-height: 1.2;
       color: var(--muted);
     }
     .brand-copy strong {
       display: block;
-      margin-bottom: 3px;
+      margin-bottom: 5px;
       color: var(--text);
+      font-size: 26px;
       font-weight: 700;
+      line-height: 1.05;
+      text-transform: uppercase;
     }
     .header-actions {
       justify-self: end;
@@ -347,45 +350,6 @@
       font-size: calc(12px * var(--index-font-scale));
     }
 
-    .font-tuner {
-      position: fixed;
-      z-index: 50;
-      left: 50%;
-      bottom: 18px;
-      width: min(680px, calc(100vw - 32px));
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 22px;
-      padding: 14px 18px;
-      border: 1px solid var(--line);
-      background: var(--panel);
-      backdrop-filter: blur(18px);
-      box-shadow: 0 14px 44px rgba(0, 0, 0, 0.14);
-      transform: translateX(-50%);
-    }
-    .font-tuner-control {
-      display: grid;
-      grid-template-columns: 1fr auto;
-      gap: 8px 14px;
-      align-items: center;
-      min-width: 0;
-    }
-    .font-tuner-label {
-      font-size: 12px;
-      color: var(--text);
-    }
-    .font-tuner-value {
-      color: var(--muted);
-      font-size: 12px;
-      font-variant-numeric: tabular-nums;
-    }
-    .font-tuner-input {
-      grid-column: 1 / -1;
-      width: 100%;
-      min-height: 24px;
-      accent-color: var(--text);
-    }
-
     .atmosphere-media {
       position: fixed;
       inset: 0;
@@ -430,7 +394,11 @@
         font-size: 9px;
         line-height: 1.25;
       }
-      .brand-copy strong { margin-bottom: 2px; }
+      .brand-copy strong {
+        margin-bottom: 2px;
+        font-size: 12px;
+        line-height: 1.05;
+      }
       .header-actions { gap: 0; }
       .header-icon { width: 38px; height: 38px; }
       .header-icon svg { width: 19px; height: 19px; }
@@ -477,12 +445,6 @@
         max-width: none;
         font-size: clamp(16px, calc(18px * var(--article-font-scale)), 25px);
         line-height: 1.5;
-      }
-      .font-tuner {
-        bottom: 10px;
-        grid-template-columns: 1fr;
-        gap: 10px;
-        padding: 12px 14px;
       }
     }
   </style>
@@ -542,19 +504,6 @@
     </section>
   </main>
 
-  <section class="font-tuner" aria-label="Временная настройка размера текста">
-    <label class="font-tuner-control">
-      <span class="font-tuner-label">Левая колонка</span>
-      <output class="font-tuner-value" id="index-font-value" for="index-font-size">100%</output>
-      <input class="font-tuner-input" id="index-font-size" type="range" min="70" max="140" step="5" value="100">
-    </label>
-    <label class="font-tuner-control">
-      <span class="font-tuner-label">Правая колонка</span>
-      <output class="font-tuner-value" id="article-font-value" for="article-font-size">100%</output>
-      <input class="font-tuner-input" id="article-font-size" type="range" min="70" max="140" step="5" value="100">
-    </label>
-  </section>
-
   <video class="atmosphere-media" id="leaves-overlay" src="leaves-wall.mp4" loop muted playsinline preload="none"></video>
   <audio id="forest-audio" src="forest.mp3" loop preload="none"></audio>
   <video class="atmosphere-media" id="moon-overlay" src="moon.mp4" loop muted playsinline preload="none"></video>
@@ -567,8 +516,6 @@
     const state = { articles: [], selectedId: null };
     const PAPER_KEY = "smolenskPaperBgV2";
     const ATMOSPHERE_KEY = "smolenskAtmosphereV2";
-    const INDEX_FONT_KEY = "smolenskIndexFontSize";
-    const ARTICLE_FONT_KEY = "smolenskArticleFontSize";
 
     function escapeHtml(value) {
       return String(value ?? "")
@@ -932,28 +879,6 @@
       localStorage.setItem(PAPER_KEY, mode);
     }
 
-    function applyFontSize(target, value, persist = true) {
-      const percent = Math.min(140, Math.max(70, Number(value) || 100));
-      const isIndex = target === "index";
-      const input = document.getElementById(isIndex ? "index-font-size" : "article-font-size");
-      const output = document.getElementById(isIndex ? "index-font-value" : "article-font-value");
-      const property = isIndex ? "--index-font-scale" : "--article-font-scale";
-      const storageKey = isIndex ? INDEX_FONT_KEY : ARTICLE_FONT_KEY;
-      document.documentElement.style.setProperty(property, String(percent / 100));
-      input.value = String(percent);
-      output.value = `${percent}%`;
-      if (persist) localStorage.setItem(storageKey, String(percent));
-    }
-
-    function initFontTuner() {
-      const indexInput = document.getElementById("index-font-size");
-      const articleInput = document.getElementById("article-font-size");
-      applyFontSize("index", localStorage.getItem(INDEX_FONT_KEY) || 100, false);
-      applyFontSize("article", localStorage.getItem(ARTICLE_FONT_KEY) || 100, false);
-      indexInput.addEventListener("input", () => applyFontSize("index", indexInput.value));
-      articleInput.addEventListener("input", () => applyFontSize("article", articleInput.value));
-    }
-
     function initSettings() {
       const button = document.getElementById("settings-button");
       const panel = document.getElementById("settings-panel");
@@ -986,7 +911,6 @@
     }
 
     initSettings();
-    initFontTuner();
     loadArticles()
       .then(({ articles, fallback }) => {
         state.articles = articles;
