@@ -10,12 +10,12 @@
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     :root {
-      --bg: #d4d0cd;
-      --text: #151515;
-      --muted: #6e6a67;
-      --faint: #9d9996;
-      --line: rgba(21, 21, 21, 0.16);
-      --panel: rgba(222, 218, 215, 0.94);
+      --bg: #090909;
+      --text: #efede7;
+      --muted: #9b9891;
+      --faint: #5f5d58;
+      --line: rgba(255, 255, 255, 0.15);
+      --panel: rgba(13, 13, 13, 0.94);
       --header-height: 104px;
       --index-font-scale: 1;
       --article-font-scale: 1;
@@ -27,9 +27,10 @@
       min-height: 100dvh;
       overflow: hidden;
       background-color: var(--bg);
-      background-image: url("bg-texture.webp");
-      background-size: cover;
-      background-position: center;
+      background-image:
+        radial-gradient(circle at 14% 7%, rgba(255, 255, 255, 0.035), transparent 30%),
+        radial-gradient(circle at 83% 68%, rgba(255, 255, 255, 0.018), transparent 38%),
+        linear-gradient(112deg, rgba(255, 255, 255, 0.012), transparent 38%, rgba(0, 0, 0, 0.18));
       color: var(--text);
       font-family: "omnes-cyrillic", sans-serif;
       font-weight: 500;
@@ -37,10 +38,28 @@
       transition: background-color 400ms ease, color 400ms ease;
     }
 
+    body::before {
+      content: "";
+      position: fixed;
+      z-index: 1;
+      inset: 0;
+      pointer-events: none;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 180 180' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='paper'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.72' numOctaves='4' seed='8' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23paper)' opacity='.42'/%3E%3C/svg%3E");
+      background-size: 220px 220px;
+      mix-blend-mode: soft-light;
+      opacity: 0.18;
+    }
+
     body.paper-beige {
       --bg: #e8e2d8;
+      --text: #151515;
+      --muted: #6e6a67;
+      --faint: #9d9996;
+      --line: rgba(21, 21, 21, 0.16);
       --panel: rgba(232, 226, 216, 0.94);
-      background-image: url("bg-texture-beige.webp");
+      background-image:
+        radial-gradient(circle at 14% 7%, rgba(255, 255, 255, 0.22), transparent 30%),
+        linear-gradient(112deg, rgba(255, 255, 255, 0.08), transparent 38%, rgba(45, 37, 29, 0.05));
     }
 
     body.theme-dark {
@@ -50,7 +69,6 @@
       --faint: #353535;
       --line: rgba(255, 255, 255, 0.13);
       --panel: rgba(8, 8, 8, 0.94);
-      background-image: none;
     }
 
     body.theme-rain {
@@ -77,7 +95,7 @@
       inset: 0 0 auto;
       height: var(--header-height);
       display: grid;
-      grid-template-columns: auto minmax(240px, 1fr) auto;
+      grid-template-columns: 1fr minmax(280px, 560px) 1fr;
       align-items: center;
       gap: clamp(22px, 4vw, 64px);
       padding: 18px 32px;
@@ -85,66 +103,54 @@
       background: transparent;
     }
 
-    .brand {
-      display: flex;
-      align-items: center;
-      gap: 18px;
-      min-width: 0;
-      pointer-events: auto;
-    }
+    .header-logo { justify-self: start; }
     .brand-logo {
-      width: 72px;
+      display: block;
+      width: 64px;
       height: auto;
-      flex: 0 0 auto;
-      filter: none;
+      filter: invert(1) grayscale(1);
+      opacity: 0.9;
     }
-    body.theme-dark .brand-logo { filter: invert(1) grayscale(1); opacity: 0.74; }
+    body.paper-beige .brand-logo { filter: none; }
     .brand-copy {
-      max-width: 420px;
-      font-size: 12px;
-      line-height: 1.45;
+      justify-self: center;
+      width: min(560px, 100%);
+      text-align: center;
+      font-size: 13px;
+      line-height: 1.3;
       color: var(--muted);
-      text-shadow: 0 1px 8px var(--bg);
     }
     .brand-copy strong {
       display: block;
-      margin-bottom: 5px;
+      margin-bottom: 3px;
       color: var(--text);
       font-weight: 700;
     }
-    .header-place {
-      align-self: center;
-      justify-self: start;
-      max-width: 30ch;
-      font-size: 12px;
-      color: var(--muted);
-      line-height: 1.45;
-      text-shadow: 0 1px 8px var(--bg);
-    }
     .header-actions {
+      justify-self: end;
       display: flex;
       align-items: center;
-      gap: 24px;
+      gap: 8px;
       pointer-events: auto;
     }
-    .header-link {
-      font-size: 12px;
+    .header-icon {
+      display: inline-grid;
+      width: 44px;
+      height: 44px;
+      place-items: center;
       color: var(--muted);
-      text-shadow: 0 1px 8px var(--bg);
+      border: 1px solid transparent;
+      border-radius: 50%;
+      text-decoration: none;
+      transition: color 180ms ease, border-color 180ms ease, transform 180ms var(--ease);
     }
-
-    .settings-button {
-      min-height: 44px;
-      padding: 0;
-      border-bottom: 1px solid currentColor;
+    .header-icon svg { width: 21px; height: 21px; }
+    .header-icon:hover,
+    .header-icon[aria-expanded="true"] {
       color: var(--text);
-      font-size: 12px;
-      line-height: 1.2;
-      text-shadow: 0 1px 8px var(--bg);
-      transition: color 180ms ease, transform 180ms var(--ease);
+      border-color: var(--line);
     }
-    .settings-button:hover { color: var(--muted); }
-    .settings-button:active { transform: scale(0.96); }
+    .header-icon:active { transform: scale(0.94); }
 
     .settings-panel {
       position: fixed;
@@ -411,22 +417,25 @@
     }
 
     @media (max-width: 768px) {
-      :root { --header-height: 86px; }
+      :root { --header-height: 90px; }
       body { overflow-y: auto; }
       .site-header {
         position: fixed;
         height: var(--header-height);
-        grid-template-columns: minmax(0, 1fr) auto;
-        gap: 14px;
-        padding: 12px 16px;
+        grid-template-columns: 48px minmax(0, 1fr) auto;
+        gap: 10px;
+        padding: 12px 14px;
       }
-      .brand { gap: 14px; }
-      .brand-logo { width: 58px; }
-      .brand-copy { font-size: 10px; }
-      .header-place,
-      .header-link { display: none; }
+      .brand-logo { width: 46px; }
+      .brand-copy {
+        font-size: 9px;
+        line-height: 1.25;
+      }
+      .brand-copy strong { margin-bottom: 2px; }
       .header-actions { gap: 0; }
-      .settings-panel { top: 68px; right: 16px; }
+      .header-icon { width: 38px; height: 38px; }
+      .header-icon svg { width: 19px; height: 19px; }
+      .settings-panel { top: 74px; right: 14px; }
       .archive-layout {
         display: block;
         height: auto;
@@ -481,21 +490,24 @@
 </head>
 <body>
   <header class="site-header">
-    <div class="brand">
+    <div class="header-logo">
       <img class="brand-logo" src="smolensk-logo.svg" alt="Смоленск Арт" width="79" height="40">
-      <p class="brand-copy">
-        <strong>Открытое автономное исследовательско-художественное сообщество</strong>
-        Смоленск Арт
-      </p>
     </div>
-    <p class="header-place">
-      Смоленск и пограничье<br>
-      <a href="https://t.me/tadjichka88" target="_blank" rel="noopener noreferrer">@tadjichka88</a>
+    <p class="brand-copy">
+      <strong>Открытое автономное исследовательско-художественное сообщество</strong>
+      Смоленск Арт
     </p>
     <div class="header-actions">
-      <a class="header-link" href="https://t.me/smolenskart" target="_blank" rel="noopener noreferrer">Телеграм-канал</a>
-      <button class="settings-button" id="settings-button" type="button" aria-expanded="false" aria-controls="settings-panel">
-        Настройки
+      <a class="header-icon" href="https://t.me/smolenskart" target="_blank" rel="noopener noreferrer" aria-label="Телеграм-канал">
+        <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <path d="M21 3 3.8 9.65c-1.17.47-1.16 1.12-.21 1.41l4.42 1.38L18.25 6c.48-.3.93-.14.56.19l-8.3 7.5-.32 4.38c.47 0 .68-.21.94-.46l2.25-2.18 4.68 3.45c.86.48 1.48.23 1.7-.8L22.84 4.6C23.16 3.32 22.35 2.74 21 3Z" fill="currentColor"/>
+        </svg>
+      </a>
+      <button class="header-icon" id="settings-button" type="button" aria-label="Эффекты и атмосфера" aria-expanded="false" aria-controls="settings-panel">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" aria-hidden="true">
+          <circle cx="12" cy="12" r="3.7"/>
+          <path d="M12 2v2.1M12 19.9V22M4.93 4.93l1.49 1.49M17.58 17.58l1.49 1.49M2 12h2.1M19.9 12H22M4.93 19.07l1.49-1.49M17.58 6.42l1.49-1.49"/>
+        </svg>
       </button>
     </div>
   </header>
@@ -513,8 +525,8 @@
     <div class="settings-group">
       <p class="settings-label">Фон</p>
       <div class="settings-options">
-        <button class="settings-option paper-option" type="button" data-paper="gray" aria-pressed="true">Серая бумага</button>
-        <button class="settings-option paper-option" type="button" data-paper="beige" aria-pressed="false">Бежевая бумага</button>
+        <button class="settings-option paper-option" type="button" data-paper="gray" aria-pressed="true">Чёрная бумага</button>
+        <button class="settings-option paper-option" type="button" data-paper="beige" aria-pressed="false">Тёплая бумага</button>
       </div>
     </div>
   </aside>
@@ -554,8 +566,8 @@
   <script src="appwrite-config.js"></script>
   <script>
     const state = { articles: [], selectedId: null };
-    const PAPER_KEY = "smolenskPaperBg";
-    const ATMOSPHERE_KEY = "smolenskAtmosphere";
+    const PAPER_KEY = "smolenskPaperBgV2";
+    const ATMOSPHERE_KEY = "smolenskAtmosphereV2";
     const INDEX_FONT_KEY = "smolenskIndexFontSize";
     const ARTICLE_FONT_KEY = "smolenskArticleFontSize";
 
