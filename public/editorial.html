@@ -208,20 +208,17 @@
     }
     .index-search-input {
       width: 100%;
-      min-height: 48px;
-      padding: 8px 2px;
+      padding: 0;
       border: 0;
-      border-bottom: 1px solid var(--line);
       border-radius: 0;
       outline: 0;
       background: transparent;
       color: var(--text);
-      font-size: 17px;
-      line-height: 1.2;
-      transition: border-color 180ms ease;
+      font-size: calc(clamp(25px, 3.15vw, 48px) * var(--index-font-scale));
+      font-weight: 700;
+      line-height: 1.08;
     }
-    .index-search-input::placeholder { color: var(--faint); opacity: 1; }
-    .index-search-input:focus { border-bottom-color: var(--text); }
+    .index-search-input::placeholder { color: var(--muted); opacity: 1; }
     .index-search-input::-webkit-search-cancel-button { cursor: pointer; }
     .index-list { list-style: none; }
     .index-item + .index-item { margin-top: 43px; }
@@ -444,6 +441,9 @@
         padding: calc(var(--header-height) + 28px) 18px 180px;
       }
       .index-search { margin-bottom: 36px; }
+      .index-search-input {
+        font-size: calc(clamp(28px, 9vw, 42px) * var(--index-font-scale));
+      }
       .index-item + .index-item { margin-top: 36px; }
       .index-title {
         padding-left: 28px;
@@ -519,7 +519,7 @@
   <main class="archive-layout">
     <nav class="article-index" aria-label="Список статей">
       <label class="index-search">
-        <input class="index-search-input" id="article-search" type="search" placeholder="Поиск по заголовкам" autocomplete="off" aria-label="Поиск по заголовкам">
+        <input class="index-search-input" id="article-search" type="search" placeholder="Поиск" autocomplete="off" aria-label="Поиск по публикациям">
       </label>
       <div class="status-message" id="index-status">загрузка_</div>
       <ol class="index-list" id="index-list"></ol>
