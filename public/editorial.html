@@ -326,9 +326,46 @@
       position: relative;
       overflow: hidden;
     }
-    .gallery-track { position: relative; }
-    .gallery-slide { display: none; }
-    .gallery-slide.is-active { display: block; }
+    .gallery-track {
+      position: relative;
+      aspect-ratio: 1 / 1;
+      overflow: hidden;
+      background: color-mix(in srgb, var(--text) 5%, transparent);
+    }
+    .gallery-slide {
+      position: absolute;
+      inset: 0;
+      display: grid;
+      place-items: center;
+      visibility: hidden;
+      opacity: 0;
+      transition: opacity 220ms ease, visibility 220ms ease;
+    }
+    .gallery-slide::before {
+      content: "загрузка_";
+      position: absolute;
+      inset: 0;
+      display: grid;
+      place-items: center;
+      color: var(--muted);
+      font-size: 14px;
+    }
+    .gallery-slide.is-active {
+      visibility: visible;
+      opacity: 1;
+    }
+    .gallery-slide img,
+    .gallery-slide video {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      opacity: 0;
+      transition: opacity 220ms ease;
+    }
+    .gallery-slide.is-loaded::before { display: none; }
+    .gallery-slide.is-loaded img,
+    .gallery-slide.is-loaded video { opacity: 1; }
+    .gallery-slide.is-error::before { content: "не удалось загрузить"; }
     .gallery-controls {
       display: flex;
       align-items: center;
@@ -871,6 +908,30 @@
         const slides = Array.from(gallery.querySelectorAll(".gallery-slide"));
         const count = gallery.querySelector(".gallery-count");
         let active = 0;
+        slides.forEach(slide => {
+          const media = slide.querySelector("img, video");
+          if (!media) {
+            slide.classList.add("is-error");
+            return;
+          }
+          const markLoaded = () => slide.classList.add("is-loaded");
+          const markError = () => slide.classList.add("is-error");
+          if (media instanceof HTMLImageElement) {
+            media.loading = "eager";
+            if (media.complete && media.naturalWidth > 0) {
+              markLoaded();
+            } else {
+              media.addEventListener("load", markLoaded, { once: true });
+              media.addEventListener("error", markError, { once: true });
+            }
+          } else if (media.readyState >= HTMLMediaElement.HAVE_METADATA) {
+            markLoaded();
+          } else {
+            media.preload = "metadata";
+            media.addEventListener("loadedmetadata", markLoaded, { once: true });
+            media.addEventListener("error", markError, { once: true });
+          }
+        });
         const show = next => {
           active = (next + slides.length) % slides.length;
           slides.forEach((slide, index) => slide.classList.toggle("is-active", index === active));
