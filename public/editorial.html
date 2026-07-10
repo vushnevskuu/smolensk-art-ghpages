@@ -142,10 +142,8 @@
       height: 44px;
       place-items: center;
       color: var(--muted);
-      border: 1px solid transparent;
-      border-radius: 50%;
       text-decoration: none;
-      transition: color 180ms ease, border-color 180ms ease, transform 180ms var(--ease);
+      transition: transform 180ms var(--ease);
     }
     .header-icon svg { width: 21px; height: 21px; }
     .header-icon-image {
@@ -153,12 +151,15 @@
       height: 27px;
       object-fit: contain;
       filter: brightness(0) invert(1);
+      opacity: 0.72;
+      transition: filter 180ms ease, opacity 180ms ease, transform 180ms var(--ease);
     }
     body.paper-beige .header-icon-image { filter: brightness(0); }
-    .header-icon:hover,
-    .header-icon[aria-expanded="true"] {
-      color: var(--text);
-      border-color: var(--line);
+    .header-icon:hover .header-icon-image,
+    .header-icon[aria-expanded="true"] .header-icon-image {
+      filter: brightness(0) saturate(100%) invert(82%) sepia(65%) saturate(710%) hue-rotate(349deg) brightness(103%) contrast(101%);
+      opacity: 1;
+      transform: scale(1.1);
     }
     .header-icon:active { transform: scale(0.94); }
 
