@@ -17,7 +17,7 @@
       --line: rgba(255, 255, 255, 0.15);
       --panel: rgba(13, 13, 13, 0.94);
       --header-height: 80px;
-      --footer-height: 104px;
+      --footer-height: 116px;
       --index-font-scale: 1;
       --article-font-scale: 1;
       --ease: cubic-bezier(0.22, 1, 0.36, 1);
@@ -141,7 +141,6 @@
     body.paper-beige .header-icon-image { filter: brightness(0); }
     .header-icon:hover .header-icon-image,
     .header-icon[aria-expanded="true"] .header-icon-image {
-      filter: brightness(0) saturate(100%) invert(82%) sepia(65%) saturate(710%) hue-rotate(349deg) brightness(103%) contrast(101%);
       opacity: 1;
       transform: scale(1.1);
     }
@@ -295,6 +294,13 @@
       white-space: normal;
     }
     .article-text p + p { margin-top: 0.82em; }
+    .search-highlight {
+      padding: 0 0.08em;
+      background: #f1d26a;
+      color: #151515;
+      box-decoration-break: clone;
+      -webkit-box-decoration-break: clone;
+    }
     .media-figure img,
     .media-figure video {
       display: block;
@@ -359,7 +365,7 @@
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      padding: 14px 32px 18px;
+      padding: 14px 0 18px;
       text-align: center;
       pointer-events: none;
     }
@@ -371,10 +377,12 @@
     .footer-statement {
       width: 100%;
       color: var(--text);
-      font-size: clamp(18px, 2vw, 28px);
+      font-size: clamp(22px, 2.3vw, 34px);
       font-weight: 700;
       line-height: 1.05;
+      letter-spacing: -0.035em;
       text-transform: uppercase;
+      white-space: nowrap;
     }
 
     .atmosphere-media {
@@ -469,6 +477,7 @@
       .footer-statement {
         font-size: clamp(16px, 5vw, 21px);
         line-height: 1.08;
+        white-space: normal;
       }
     }
   </style>
@@ -577,6 +586,38 @@
         .replace(/(^|\s)#[\p{L}\p{N}_-]+/gu, "$1")
         .replace(/[ \t]+$/gm, "")
         .trim();
+    }
+
+    function normalizedSearchText(value) {
+      return stripHashtags(value).replace(/\s+/g, " ").toLocaleLowerCase("ru-RU");
+    }
+
+    function articleBodySearchText(article) {
+      return article.blocks.flatMap(block => [
+        block.text || "",
+        block.caption || "",
+        block.alt || "",
+        ...(block.media || []).flatMap(item => [item.alt || "", item.name || ""]),
+      ]).join(" ");
+    }
+
+    function escapeRegExp(value) {
+      return String(value).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    }
+
+    function highlightHtml(value) {
+      const source = String(value || "");
+      const query = state.searchQuery.trim();
+      if (!query) return escapeHtml(source);
+      const pattern = new RegExp(escapeRegExp(query), "giu");
+      let html = "";
+      let lastIndex = 0;
+      for (const match of source.matchAll(pattern)) {
+        html += escapeHtml(source.slice(lastIndex, match.index));
+        html += `<mark class="search-highlight">${escapeHtml(match[0])}</mark>`;
+        lastIndex = match.index + match[0].length;
+      }
+      return html + escapeHtml(source.slice(lastIndex));
     }
 
     function deriveTitle(item) {
@@ -726,9 +767,17 @@
     function renderIndex() {
       const list = document.getElementById("index-list");
       const status = document.getElementById("index-status");
-      const query = state.searchQuery.trim().toLocaleLowerCase("ru-RU");
+      const query = normalizedSearchText(state.searchQuery);
       const articles = query
-        ? state.articles.filter(article => article.title.toLocaleLowerCase("ru-RU").includes(query))
+        ? state.articles
+            .map((article, index) => {
+              const titleMatch = normalizedSearchText(article.title).includes(query);
+              const bodyMatch = normalizedSearchText(articleBodySearchText(article)).includes(query);
+              return { article, index, score: titleMatch ? 2 : bodyMatch ? 1 : 0 };
+            })
+            .filter(result => result.score > 0)
+            .sort((a, b) => b.score - a.score || a.index - b.index)
+            .map(result => result.article)
         : state.articles;
       status.hidden = true;
       list.innerHTML = "";
@@ -763,7 +812,7 @@
       return stripHashtags(text)
         .split(/\n+/)
         .filter(Boolean)
-        .map(paragraph => `<p>${escapeHtml(normalizeSentenceCase(paragraph.trim()))}</p>`)
+        .map(paragraph => `<p>${highlightHtml(normalizeSentenceCase(paragraph.trim()))}</p>`)
         .join("");
     }
 
@@ -784,7 +833,7 @@
       if (!media.length) return "";
       const cleanCaption = stripHashtags(block.caption);
       const caption = cleanCaption
-        ? `<figcaption class="media-caption">${escapeHtml(cleanCaption)}</figcaption>`
+        ? `<figcaption class="media-caption">${highlightHtml(cleanCaption)}</figcaption>`
         : "";
       if (block.type === "gallery" && media.length > 1) {
         const slides = media.map((item, slideIndex) =>
@@ -843,10 +892,29 @@
         shell.classList.remove("is-changing");
         initGalleries(shell);
         document.getElementById("article-back").addEventListener("click", closeMobileArticle);
-        document.getElementById("article-view").scrollTop = 0;
+        const articleView = document.getElementById("article-view");
+        articleView.scrollTop = 0;
         if (window.matchMedia("(max-width: 768px)").matches) {
           document.body.classList.add("mobile-reading");
           window.scrollTo({ top: 0, behavior: "instant" });
+        }
+        const firstMatch = shell.querySelector(".search-highlight");
+        if (firstMatch) {
+          const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+          window.requestAnimationFrame(() => {
+            if (window.matchMedia("(max-width: 768px)").matches) {
+              firstMatch.scrollIntoView({ behavior: reduceMotion ? "auto" : "smooth", block: "center" });
+              return;
+            }
+            const targetTop =
+              firstMatch.getBoundingClientRect().top -
+              articleView.getBoundingClientRect().top +
+              articleView.scrollTop;
+            articleView.scrollTo({
+              top: Math.max(0, targetTop - articleView.clientHeight * 0.25),
+              behavior: reduceMotion ? "auto" : "smooth",
+            });
+          });
         }
       }, 120);
       if (updateHash) history.replaceState(null, "", `#article=${encodeURIComponent(article.id)}`);
