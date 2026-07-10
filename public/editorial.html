@@ -148,6 +148,12 @@
       transition: color 180ms ease, border-color 180ms ease, transform 180ms var(--ease);
     }
     .header-icon svg { width: 21px; height: 21px; }
+    .header-icon-image {
+      width: 27px;
+      height: 27px;
+      object-fit: contain;
+    }
+    body.paper-beige .header-icon-image { filter: invert(1); }
     .header-icon:hover,
     .header-icon[aria-expanded="true"] {
       color: var(--text);
@@ -392,6 +398,7 @@
       .header-actions { gap: 0; }
       .header-icon { width: 38px; height: 38px; }
       .header-icon svg { width: 19px; height: 19px; }
+      .header-icon-image { width: 24px; height: 24px; }
       .settings-panel { top: 74px; right: 14px; }
       .archive-layout {
         display: block;
@@ -449,10 +456,7 @@
         </svg>
       </a>
       <button class="header-icon" id="settings-button" type="button" aria-label="Эффекты и атмосфера" aria-expanded="false" aria-controls="settings-panel">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" aria-hidden="true">
-          <circle cx="12" cy="12" r="3.7"/>
-          <path d="M12 2v2.1M12 19.9V22M4.93 4.93l1.49 1.49M17.58 17.58l1.49 1.49M2 12h2.1M19.9 12H22M4.93 19.07l1.49-1.49M17.58 6.42l1.49-1.49"/>
-        </svg>
+        <img class="header-icon-image" src="sun-drawn.png" alt="">
       </button>
     </div>
   </header>
