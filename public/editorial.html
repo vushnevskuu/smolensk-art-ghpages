@@ -277,14 +277,6 @@
       line-height: 1.15;
       letter-spacing: -0.03em;
     }
-    .article-meta {
-      display: block;
-      margin: 8px 0 16px;
-      color: var(--muted);
-      font-size: clamp(12px, calc(14px * var(--article-font-scale)), 18px);
-      line-height: 1.35;
-      font-variant-numeric: tabular-nums;
-    }
     .article-block + .article-block {
       margin-top: clamp(36px, calc(44px * var(--article-font-scale)), 60px);
     }
@@ -427,9 +419,6 @@
       body.mobile-reading .article-index { display: none; }
       body.mobile-reading .article-view { display: block; }
       .article-back { display: inline-flex; align-items: center; min-height: 44px; }
-      .article-meta {
-        margin: 4px 0 12px;
-      }
       .article-block + .article-block {
         margin-top: clamp(28px, calc(34px * var(--article-font-scale)), 44px);
       }
@@ -517,16 +506,6 @@
       if (Number.isNaN(date.getTime())) return "";
       const year = String(date.getFullYear()).slice(-2);
       return `${String(date.getDate()).padStart(2, "0")}.${String(date.getMonth() + 1).padStart(2, "0")}.${year}`;
-    }
-
-    function formatArticleDate(timestamp) {
-      const date = new Date(timestamp);
-      if (Number.isNaN(date.getTime())) return "";
-      return date.toLocaleDateString("ru-RU", {
-        day: "2-digit",
-        month: "2-digit",
-        year: "2-digit",
-      });
     }
 
     function uppercaseFirstLetter(value) {
@@ -794,7 +773,6 @@
         const blocks = article.blocks.map(renderBlock).join("");
         shell.innerHTML =
           `<button class="article-back" id="article-back" type="button">← К списку статей</button>` +
-          `<time class="article-meta">${escapeHtml(formatArticleDate(article.timestamp))}</time>` +
           `<div class="article-content">${blocks || '<p class="article-text">Материал готовится.</p>'}</div>`;
         shell.classList.remove("is-changing");
         initGalleries(shell);
