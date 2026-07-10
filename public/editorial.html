@@ -279,15 +279,6 @@
       line-height: 1.35;
       font-variant-numeric: tabular-nums;
     }
-    .article-title {
-      max-width: 780px;
-      margin: 0 0 clamp(32px, calc(44px * var(--article-font-scale)), 56px);
-      font-size: clamp(30px, calc(44px * var(--article-font-scale)), 62px);
-      font-weight: 700;
-      line-height: 1.07;
-      letter-spacing: -0.025em;
-      overflow-wrap: break-word;
-    }
     .article-block + .article-block {
       margin-top: clamp(36px, calc(44px * var(--article-font-scale)), 60px);
     }
@@ -432,11 +423,6 @@
       .article-back { display: inline-flex; align-items: center; min-height: 44px; }
       .article-meta {
         margin: 4px 0 12px;
-      }
-      .article-title {
-        max-width: none;
-        margin: 0 0 30px;
-        font-size: clamp(28px, calc(36px * var(--article-font-scale)), 50px);
       }
       .article-block + .article-block {
         margin-top: clamp(28px, calc(34px * var(--article-font-scale)), 44px);
@@ -808,7 +794,6 @@
         shell.innerHTML =
           `<button class="article-back" id="article-back" type="button">← К списку статей</button>` +
           `<time class="article-meta">${escapeHtml(formatArticleDate(article.timestamp))}</time>` +
-          `<h1 class="article-title">${escapeHtml(article.title)}</h1>` +
           `<div class="article-content">${blocks || '<p class="article-text">Материал готовится.</p>'}</div>`;
         shell.classList.remove("is-changing");
         initGalleries(shell);
