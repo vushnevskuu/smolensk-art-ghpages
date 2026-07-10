@@ -228,10 +228,18 @@
       border-radius: 0;
       outline: 0;
       background: transparent;
-      color: var(--text);
+      color: var(--muted);
       font-size: calc(var(--index-heading-size) * var(--index-font-scale));
-      font-weight: 700;
+      font-weight: 500;
       line-height: 1.08;
+      letter-spacing: -0.035em;
+      opacity: 0.67;
+      transition: color 180ms ease, opacity 180ms ease;
+    }
+    .index-search-input:focus,
+    .index-search.has-value .index-search-input {
+      color: var(--text);
+      opacity: 1;
     }
     .index-search.has-value .index-search-input {
       padding-right: clamp(28px, 3vw, 40px);
