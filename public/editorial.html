@@ -1,0 +1,858 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Смоленск Арт - архив</title>
+  <meta name="description" content="Исследования, статьи и материалы сообщества Смоленск Арт">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #d4d0cd;
+      --text: #151515;
+      --muted: #6e6a67;
+      --faint: #9d9996;
+      --line: rgba(21, 21, 21, 0.16);
+      --panel: rgba(222, 218, 215, 0.94);
+      --header-height: 132px;
+      --ease: cubic-bezier(0.22, 1, 0.36, 1);
+    }
+
+    html { background: var(--bg); }
+    body {
+      min-height: 100dvh;
+      overflow: hidden;
+      background-color: var(--bg);
+      background-image: url("bg-texture.webp");
+      background-size: cover;
+      background-position: center;
+      color: var(--text);
+      font-family: Helvetica, Arial, sans-serif;
+      transition: background-color 400ms ease, color 400ms ease;
+    }
+
+    body.paper-beige {
+      --bg: #e8e2d8;
+      --panel: rgba(232, 226, 216, 0.94);
+      background-image: url("bg-texture-beige.webp");
+    }
+
+    body.theme-dark {
+      --bg: #080808;
+      --text: #a8a8a8;
+      --muted: #565656;
+      --faint: #353535;
+      --line: rgba(255, 255, 255, 0.13);
+      --panel: rgba(8, 8, 8, 0.94);
+      background-image: none;
+    }
+
+    body.theme-rain {
+      --bg: #9aa4b0;
+      --text: #151515;
+      --muted: #59616a;
+      --faint: #77808a;
+      --line: rgba(21, 21, 21, 0.18);
+      --panel: rgba(154, 164, 176, 0.94);
+      background-image: none;
+    }
+
+    button, input { font: inherit; color: inherit; }
+    button { border: 0; background: none; cursor: pointer; }
+    button:focus-visible, a:focus-visible {
+      outline: 2px solid currentColor;
+      outline-offset: 4px;
+    }
+    a { color: inherit; text-decoration-thickness: 1px; text-underline-offset: 3px; }
+
+    .site-header {
+      position: relative;
+      z-index: 20;
+      height: var(--header-height);
+      display: grid;
+      grid-template-columns: minmax(220px, 31vw) minmax(0, 1fr) auto;
+      align-items: start;
+      gap: 36px;
+      padding: 24px 32px 18px;
+      border-bottom: 1px solid var(--line);
+      background: var(--panel);
+      backdrop-filter: blur(12px);
+    }
+
+    .brand {
+      display: flex;
+      align-items: flex-start;
+      gap: 22px;
+      min-width: 0;
+    }
+    .brand-logo {
+      width: 78px;
+      height: auto;
+      flex: 0 0 auto;
+      filter: none;
+    }
+    body.theme-dark .brand-logo { filter: invert(1) grayscale(1); opacity: 0.74; }
+    .brand-copy {
+      max-width: 360px;
+      font-size: 12px;
+      line-height: 1.45;
+      color: var(--muted);
+    }
+    .brand-copy strong {
+      display: block;
+      margin-bottom: 5px;
+      color: var(--text);
+      font-weight: 500;
+    }
+    .header-link {
+      align-self: start;
+      justify-self: start;
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    .settings-button {
+      display: grid;
+      width: 44px;
+      height: 44px;
+      place-items: center;
+      border: 1px solid var(--line);
+      font-size: 25px;
+      line-height: 1;
+      transition: background 180ms ease, transform 180ms var(--ease);
+    }
+    .settings-button:hover { background: color-mix(in srgb, var(--text) 8%, transparent); }
+    .settings-button:active { transform: scale(0.96); }
+
+    .settings-panel {
+      position: fixed;
+      z-index: 40;
+      top: 78px;
+      right: 32px;
+      width: min(320px, calc(100vw - 32px));
+      padding: 20px;
+      border: 1px solid var(--line);
+      background: var(--panel);
+      backdrop-filter: blur(18px);
+      box-shadow: 0 18px 60px rgba(0, 0, 0, 0.14);
+    }
+    .settings-panel[hidden] { display: none; }
+    .settings-group + .settings-group { margin-top: 22px; }
+    .settings-label {
+      margin-bottom: 9px;
+      color: var(--muted);
+      font-size: 11px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+    .settings-options { display: grid; gap: 3px; }
+    .settings-option {
+      min-height: 38px;
+      padding: 8px 10px;
+      text-align: left;
+      color: var(--muted);
+      font-size: 13px;
+    }
+    .settings-option:hover,
+    .settings-option[aria-pressed="true"] {
+      color: var(--text);
+      background: color-mix(in srgb, var(--text) 8%, transparent);
+    }
+
+    .archive-layout {
+      position: relative;
+      z-index: 10;
+      display: grid;
+      grid-template-columns: minmax(300px, 38vw) minmax(0, 1fr);
+      height: calc(100dvh - var(--header-height));
+    }
+
+    .article-index,
+    .article-view {
+      min-width: 0;
+      overflow-y: auto;
+      overscroll-behavior: contain;
+      scrollbar-width: thin;
+      scrollbar-color: var(--faint) transparent;
+    }
+
+    .article-index {
+      border-right: 1px solid var(--line);
+      padding: 25px 32px 70px;
+    }
+    .index-list { list-style: none; }
+    .index-item + .index-item { margin-top: 43px; }
+    .index-button {
+      display: block;
+      width: 100%;
+      text-align: left;
+    }
+    .index-date {
+      display: block;
+      margin-bottom: 14px;
+      color: var(--muted);
+      font-size: clamp(13px, 1.15vw, 18px);
+      font-variant-numeric: tabular-nums;
+      transition: color 180ms ease;
+    }
+    .index-title {
+      display: block;
+      padding-left: clamp(22px, 5vw, 52px);
+      color: var(--muted);
+      font-size: clamp(25px, 3.15vw, 48px);
+      font-weight: 400;
+      line-height: 1.08;
+      letter-spacing: -0.035em;
+      text-transform: lowercase;
+      overflow-wrap: anywhere;
+      transition: color 180ms ease, transform 260ms var(--ease);
+    }
+    .index-button:hover .index-title,
+    .index-button[aria-current="true"] .index-title {
+      color: var(--text);
+      transform: translateX(8px);
+    }
+    .index-button:hover .index-date,
+    .index-button[aria-current="true"] .index-date { color: var(--text); }
+
+    .article-view { padding: 28px 40px 100px; }
+    .article-shell {
+      width: min(100%, 980px);
+      margin: 0 auto;
+      opacity: 1;
+      transform: translateY(0);
+      transition: opacity 220ms ease, transform 320ms var(--ease);
+    }
+    .article-shell.is-changing {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+    .article-back {
+      display: none;
+      margin-bottom: 28px;
+      color: var(--muted);
+      font-size: 13px;
+    }
+    .article-empty {
+      max-width: 420px;
+      padding-top: 14vh;
+      color: var(--muted);
+      font-size: clamp(22px, 3vw, 42px);
+      line-height: 1.15;
+      letter-spacing: -0.03em;
+    }
+    .article-meta {
+      display: block;
+      margin: 28px 0 20px;
+      color: var(--muted);
+      font-size: 17px;
+      font-variant-numeric: tabular-nums;
+    }
+    .article-title {
+      max-width: 21ch;
+      margin: 0 0 60px clamp(0px, 5vw, 56px);
+      font-size: clamp(34px, 4.7vw, 66px);
+      font-weight: 400;
+      line-height: 1.03;
+      letter-spacing: -0.04em;
+      text-transform: lowercase;
+      overflow-wrap: anywhere;
+    }
+    .article-block + .article-block { margin-top: 54px; }
+    .article-text {
+      max-width: 36ch;
+      font-size: clamp(20px, 2.35vw, 34px);
+      line-height: 1.18;
+      letter-spacing: -0.025em;
+      white-space: pre-wrap;
+    }
+    .article-text p + p { margin-top: 1.1em; }
+    .media-figure img,
+    .media-figure video {
+      display: block;
+      width: 100%;
+      height: auto;
+      background: rgba(0, 0, 0, 0.08);
+    }
+    .media-caption {
+      margin-top: 13px;
+      max-width: 62ch;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.45;
+    }
+
+    .gallery {
+      position: relative;
+      overflow: hidden;
+    }
+    .gallery-track { position: relative; }
+    .gallery-slide { display: none; }
+    .gallery-slide.is-active { display: block; }
+    .gallery-controls {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 20px;
+      margin-top: 12px;
+      color: var(--muted);
+      font-size: 13px;
+    }
+    .gallery-actions { display: flex; gap: 16px; }
+    .gallery-action {
+      min-width: 34px;
+      min-height: 34px;
+      color: var(--muted);
+    }
+    .gallery-action:hover { color: var(--text); }
+
+    .status-message {
+      padding: 36px 32px;
+      color: var(--muted);
+      font-size: 14px;
+    }
+    .fallback-message {
+      margin-bottom: 28px;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .atmosphere-media {
+      position: fixed;
+      inset: 0;
+      z-index: 4;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity 650ms var(--ease);
+    }
+    #leaves-overlay { mix-blend-mode: multiply; }
+    body.atmosphere-sun #leaves-overlay {
+      opacity: 1;
+      filter: sepia(22%) saturate(1.12) brightness(1.04) contrast(1.02) hue-rotate(-8deg);
+    }
+    body.atmosphere-night #moon-overlay { opacity: 0.6; }
+    body.atmosphere-rain #rain-overlay {
+      opacity: 0.55;
+      mix-blend-mode: multiply;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        scroll-behavior: auto !important;
+        transition-duration: 0.01ms !important;
+      }
+    }
+
+    @media (max-width: 768px) {
+      :root { --header-height: auto; }
+      body { overflow-y: auto; }
+      .site-header {
+        position: sticky;
+        top: 0;
+        height: auto;
+        grid-template-columns: minmax(0, 1fr) auto;
+        gap: 14px;
+        padding: 16px;
+      }
+      .brand { gap: 14px; }
+      .brand-logo { width: 58px; }
+      .brand-copy { font-size: 10px; }
+      .header-link { display: none; }
+      .settings-panel { top: 68px; right: 16px; }
+      .archive-layout {
+        display: block;
+        height: auto;
+        min-height: calc(100dvh - 96px);
+      }
+      .article-index,
+      .article-view {
+        height: auto;
+        overflow: visible;
+      }
+      .article-index {
+        border-right: 0;
+        padding: 28px 18px 80px;
+      }
+      .index-item + .index-item { margin-top: 36px; }
+      .index-title {
+        padding-left: 28px;
+        font-size: clamp(28px, 9vw, 42px);
+      }
+      .index-date { font-size: 14px; }
+      .article-view {
+        display: none;
+        padding: 18px 16px 80px;
+      }
+      body.mobile-reading .article-index { display: none; }
+      body.mobile-reading .article-view { display: block; }
+      .article-back { display: inline-flex; align-items: center; min-height: 44px; }
+      .article-meta { margin-top: 20px; font-size: 14px; }
+      .article-title {
+        margin: 0 0 42px 28px;
+        font-size: clamp(32px, 9.5vw, 44px);
+      }
+      .article-block + .article-block { margin-top: 38px; }
+      .article-text { font-size: clamp(21px, 6.7vw, 31px); }
+    }
+  </style>
+</head>
+<body>
+  <header class="site-header">
+    <div class="brand">
+      <img class="brand-logo" src="smolensk-logo.svg" alt="Смоленск Арт" width="79" height="40">
+      <p class="brand-copy">
+        <strong>Открытое автономное исследовательско-художественное сообщество</strong>
+        Смоленск и пограничье<br>
+        <a href="https://t.me/tadjichka88" target="_blank" rel="noopener noreferrer">@tadjichka88</a>
+      </p>
+    </div>
+    <a class="header-link" href="https://t.me/smolenskart" target="_blank" rel="noopener noreferrer">t.me/smolenskart</a>
+    <button class="settings-button" id="settings-button" type="button" aria-label="Настройки фона и атмосферы" aria-expanded="false" aria-controls="settings-panel">
+      <span aria-hidden="true">◐</span>
+    </button>
+  </header>
+
+  <aside class="settings-panel" id="settings-panel" hidden>
+    <div class="settings-group">
+      <p class="settings-label">Атмосфера</p>
+      <div class="settings-options">
+        <button class="settings-option atmosphere-option" type="button" data-atmosphere="plain" aria-pressed="true">Обычный фон</button>
+        <button class="settings-option atmosphere-option" type="button" data-atmosphere="sun" aria-pressed="false">Солнечный день</button>
+        <button class="settings-option atmosphere-option" type="button" data-atmosphere="night" aria-pressed="false">Ночь</button>
+        <button class="settings-option atmosphere-option" type="button" data-atmosphere="rain" aria-pressed="false">Дождь</button>
+      </div>
+    </div>
+    <div class="settings-group">
+      <p class="settings-label">Фон</p>
+      <div class="settings-options">
+        <button class="settings-option paper-option" type="button" data-paper="gray" aria-pressed="true">Серая бумага</button>
+        <button class="settings-option paper-option" type="button" data-paper="beige" aria-pressed="false">Бежевая бумага</button>
+      </div>
+    </div>
+  </aside>
+
+  <main class="archive-layout">
+    <nav class="article-index" aria-label="Список статей">
+      <div class="status-message" id="index-status">загрузка_</div>
+      <ol class="index-list" id="index-list"></ol>
+    </nav>
+    <section class="article-view" id="article-view" aria-live="polite">
+      <article class="article-shell" id="article-shell">
+        <p class="article-empty">Выберите статью в левом столбце</p>
+      </article>
+    </section>
+  </main>
+
+  <video class="atmosphere-media" id="leaves-overlay" src="leaves-wall.mp4" loop muted playsinline preload="none"></video>
+  <audio id="forest-audio" src="forest.mp3" loop preload="none"></audio>
+  <video class="atmosphere-media" id="moon-overlay" src="moon.mp4" loop muted playsinline preload="none"></video>
+  <audio id="night-audio" src="night_normalized.mp3" loop preload="none"></audio>
+  <video class="atmosphere-media" id="rain-overlay" src="rain.mp4" loop muted playsinline preload="none"></video>
+  <audio id="rain-audio" src="rain_normalized.mp3" loop preload="none"></audio>
+
+  <script src="appwrite-config.js"></script>
+  <script>
+    const state = { articles: [], selectedId: null };
+    const PAPER_KEY = "smolenskPaperBg";
+    const ATMOSPHERE_KEY = "smolenskAtmosphere";
+
+    function escapeHtml(value) {
+      return String(value ?? "")
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;");
+    }
+
+    function formatIndexDate(timestamp) {
+      const date = new Date(timestamp);
+      if (Number.isNaN(date.getTime())) return "";
+      const year = String(date.getFullYear()).slice(-2);
+      return `${String(date.getDate()).padStart(2, "0")}.${String(date.getMonth() + 1).padStart(2, "0")}.${year}`;
+    }
+
+    function formatArticleDate(timestamp) {
+      const date = new Date(timestamp);
+      if (Number.isNaN(date.getTime())) return "";
+      return date.toLocaleDateString("ru-RU", {
+        day: "2-digit",
+        month: "2-digit",
+        year: "2-digit",
+      });
+    }
+
+    function deriveTitle(item) {
+      const raw = item.title || item.caption || item.text || item.message || "Без названия";
+      const plain = String(raw).replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim();
+      return plain.length > 110 ? `${plain.slice(0, 107)}...` : plain;
+    }
+
+    function compareArticles(a, b) {
+      if (Boolean(a.featured) !== Boolean(b.featured)) return a.featured ? -1 : 1;
+      return b.timestamp - a.timestamp;
+    }
+
+    function parseStoredBlocks(post, mediaByFile) {
+      if (!post.blocksJson) return [];
+      try {
+        const parsed = JSON.parse(post.blocksJson);
+        if (!Array.isArray(parsed)) return [];
+        return parsed.flatMap(block => {
+          if (!block || typeof block !== "object" || typeof block.type !== "string") return [];
+          if (block.type === "text") {
+            return block.text ? [{ type: "text", text: String(block.text) }] : [];
+          }
+          const media = Array.isArray(block.fileIds)
+            ? block.fileIds.map(fileId => mediaByFile.get(fileId)).filter(Boolean)
+            : [];
+          if (!media.length) return [];
+          return [{
+            type: block.type,
+            caption: String(block.caption || ""),
+            alt: String(block.alt || ""),
+            media,
+          }];
+        });
+      } catch {
+        return [];
+      }
+    }
+
+    function legacyBlocks(post, attached) {
+      const blocks = [];
+      if (post.type !== "text" && attached.length) {
+        blocks.push({
+          type: post.type,
+          caption: post.caption || "",
+          alt: attached[0]?.alt || "",
+          media: attached,
+        });
+      }
+      if (post.text) blocks.push({ type: "text", text: post.text });
+      return blocks;
+    }
+
+    async function fetchAppwriteRows(tableId) {
+      const config = window.SMOLENSK_APPWRITE_CONFIG;
+      if (!config?.endpoint || !config?.projectId) throw new Error("Appwrite не настроен");
+      const endpoint = config.endpoint.replace(/\/$/, "");
+      const query = encodeURIComponent('{"method":"limit","values":[500]}');
+      const url = `${endpoint}/tablesdb/${encodeURIComponent(config.databaseId)}/tables/${encodeURIComponent(tableId)}/rows?queries[]=${query}`;
+      const response = await fetch(url, {
+        headers: { "X-Appwrite-Project": config.projectId },
+      });
+      if (!response.ok) throw new Error(`Appwrite: ${response.status}`);
+      const payload = await response.json();
+      return payload.rows || [];
+    }
+
+    async function loadAppwriteArticles() {
+      const config = window.SMOLENSK_APPWRITE_CONFIG;
+      const [posts, media] = await Promise.all([
+        fetchAppwriteRows(config.postsTableId),
+        fetchAppwriteRows(config.mediaTableId),
+      ]);
+      const mediaByPost = new Map();
+      const mediaByFile = new Map();
+      media.forEach(item => {
+        mediaByFile.set(item.fileId, item);
+        const current = mediaByPost.get(item.postId) || [];
+        current.push(item);
+        mediaByPost.set(item.postId, current);
+      });
+      mediaByPost.forEach(items => items.sort((a, b) => a.position - b.position));
+
+      return posts.map(post => {
+        const attached = mediaByPost.get(post.$id) || [];
+        const storedBlocks = parseStoredBlocks(post, mediaByFile);
+        const timestamp = Date.parse(post.publishedAt || post.$createdAt);
+        return {
+          id: post.$id,
+          title: deriveTitle(post),
+          timestamp: Number.isNaN(timestamp) ? Date.now() : timestamp,
+          featured: Boolean(post.featured),
+          blocks: storedBlocks.length ? storedBlocks : legacyBlocks(post, attached),
+        };
+      }).sort(compareArticles);
+    }
+
+    function legacyItemToArticle(item) {
+      const media = [];
+      if (Array.isArray(item.images)) {
+        item.images.forEach(image => media.push({
+          url: image.url,
+          alt: image.alt || item.caption || "",
+          mimeType: "image/webp",
+        }));
+      } else if (item.url) {
+        media.push({
+          url: item.url,
+          alt: item.alt || item.caption || "",
+          mimeType: item.type === "video" ? "video/mp4" : item.type === "gif" ? "image/gif" : "image/webp",
+        });
+      }
+      const blocks = [];
+      if (media.length) {
+        blocks.push({
+          type: item.type === "gallery" ? "gallery" : item.type === "video" ? "video" : item.type === "gif" ? "animation" : "image",
+          caption: item.caption || "",
+          alt: item.alt || item.caption || "",
+          media,
+        });
+      }
+      const text = item.text || item.message || item.bodyHtml || item.html || "";
+      if (text) blocks.push({ type: "text", text: String(text).replace(/<[^>]+>/g, " ") });
+      return {
+        id: String(item.id || crypto.randomUUID()),
+        title: deriveTitle(item),
+        timestamp: Number(item.ts) || Date.now(),
+        featured: Boolean(item.featured),
+        blocks,
+      };
+    }
+
+    async function loadArticles() {
+      try {
+        return { articles: await loadAppwriteArticles(), fallback: false };
+      } catch (onlineError) {
+        const response = await fetch("content.json");
+        if (!response.ok) throw onlineError;
+        const payload = await response.json();
+        const all = [...(payload.thoughts || []), ...(payload.messages || []), ...(payload.images || [])];
+        return { articles: all.map(legacyItemToArticle).sort(compareArticles), fallback: true };
+      }
+    }
+
+    function renderIndex(fallback) {
+      const list = document.getElementById("index-list");
+      const status = document.getElementById("index-status");
+      status.hidden = true;
+      list.innerHTML = "";
+      if (fallback) {
+        const notice = document.createElement("li");
+        notice.className = "fallback-message";
+        notice.textContent = "Онлайн-лента временно недоступна. Показана сохранённая копия.";
+        list.appendChild(notice);
+      }
+      state.articles.forEach(article => {
+        const item = document.createElement("li");
+        item.className = "index-item";
+        item.innerHTML =
+          `<button class="index-button" type="button" data-article-id="${escapeHtml(article.id)}" aria-current="false">` +
+            `<time class="index-date">${escapeHtml(formatIndexDate(article.timestamp))}</time>` +
+            `<span class="index-title">${escapeHtml(article.title)}</span>` +
+          `</button>`;
+        list.appendChild(item);
+      });
+      list.querySelectorAll(".index-button").forEach(button => {
+        button.addEventListener("click", () => selectArticle(button.dataset.articleId, true));
+      });
+    }
+
+    function paragraphHtml(text) {
+      return String(text || "")
+        .split(/\n{2,}/)
+        .filter(Boolean)
+        .map(paragraph => `<p>${escapeHtml(paragraph.trim())}</p>`)
+        .join("");
+    }
+
+    function mediaHtml(item, alt, eager) {
+      const source = escapeHtml(item.url || "");
+      const safeAlt = escapeHtml(item.alt || alt || "");
+      if (String(item.mimeType || "").startsWith("video/")) {
+        return `<video src="${source}" controls playsinline preload="metadata" aria-label="${safeAlt}"></video>`;
+      }
+      return `<img src="${source}" alt="${safeAlt}" loading="${eager ? "eager" : "lazy"}">`;
+    }
+
+    function renderBlock(block, index) {
+      if (block.type === "text") {
+        return `<section class="article-block article-text">${paragraphHtml(block.text)}</section>`;
+      }
+      const media = block.media || [];
+      if (!media.length) return "";
+      const caption = block.caption
+        ? `<figcaption class="media-caption">${escapeHtml(block.caption)}</figcaption>`
+        : "";
+      if (block.type === "gallery" && media.length > 1) {
+        const slides = media.map((item, slideIndex) =>
+          `<div class="gallery-slide${slideIndex === 0 ? " is-active" : ""}">${mediaHtml(item, block.alt, index === 0 && slideIndex === 0)}</div>`
+        ).join("");
+        return (
+          `<figure class="article-block media-figure gallery" data-gallery>` +
+            `<div class="gallery-track">${slides}</div>` +
+            `<div class="gallery-controls">` +
+              `<span class="gallery-count" aria-live="polite">1 / ${media.length}</span>` +
+              `<div class="gallery-actions">` +
+                `<button class="gallery-action gallery-prev" type="button" aria-label="Предыдущее фото">←</button>` +
+                `<button class="gallery-action gallery-next" type="button" aria-label="Следующее фото">→</button>` +
+              `</div>` +
+            `</div>${caption}` +
+          `</figure>`
+        );
+      }
+      return (
+        `<figure class="article-block media-figure">` +
+          mediaHtml(media[0], block.alt, index === 0) +
+          caption +
+        `</figure>`
+      );
+    }
+
+    function initGalleries(scope) {
+      scope.querySelectorAll("[data-gallery]").forEach(gallery => {
+        const slides = Array.from(gallery.querySelectorAll(".gallery-slide"));
+        const count = gallery.querySelector(".gallery-count");
+        let active = 0;
+        const show = next => {
+          active = (next + slides.length) % slides.length;
+          slides.forEach((slide, index) => slide.classList.toggle("is-active", index === active));
+          count.textContent = `${active + 1} / ${slides.length}`;
+        };
+        gallery.querySelector(".gallery-prev").addEventListener("click", () => show(active - 1));
+        gallery.querySelector(".gallery-next").addEventListener("click", () => show(active + 1));
+      });
+    }
+
+    function selectArticle(articleId, updateHash) {
+      const article = state.articles.find(item => item.id === articleId);
+      if (!article) return;
+      state.selectedId = article.id;
+      document.querySelectorAll(".index-button").forEach(button => {
+        button.setAttribute("aria-current", button.dataset.articleId === article.id ? "true" : "false");
+      });
+      const shell = document.getElementById("article-shell");
+      shell.classList.add("is-changing");
+      window.setTimeout(() => {
+        const blocks = article.blocks.map(renderBlock).join("");
+        shell.innerHTML =
+          `<button class="article-back" id="article-back" type="button">← К списку статей</button>` +
+          `<time class="article-meta">${escapeHtml(formatArticleDate(article.timestamp))}</time>` +
+          `<h1 class="article-title" tabindex="-1">${escapeHtml(article.title)}</h1>` +
+          `<div class="article-content">${blocks || '<p class="article-text">Материал готовится.</p>'}</div>`;
+        shell.classList.remove("is-changing");
+        initGalleries(shell);
+        document.getElementById("article-back").addEventListener("click", closeMobileArticle);
+        document.getElementById("article-view").scrollTop = 0;
+        if (window.matchMedia("(max-width: 768px)").matches) {
+          document.body.classList.add("mobile-reading");
+          shell.querySelector(".article-title").focus({ preventScroll: true });
+          window.scrollTo({ top: 0, behavior: "instant" });
+        }
+      }, 120);
+      if (updateHash) history.replaceState(null, "", `#article=${encodeURIComponent(article.id)}`);
+    }
+
+    function closeMobileArticle() {
+      document.body.classList.remove("mobile-reading");
+      history.replaceState(null, "", location.pathname + location.search);
+      const selected = document.querySelector('.index-button[aria-current="true"]');
+      selected?.focus({ preventScroll: true });
+      window.scrollTo({ top: 0, behavior: "instant" });
+    }
+
+    function articleIdFromHash() {
+      const match = location.hash.match(/^#article=(.+)$/);
+      return match ? decodeURIComponent(match[1]) : null;
+    }
+
+    function stopAtmosphereMedia() {
+      ["leaves-overlay", "moon-overlay", "rain-overlay", "forest-audio", "night-audio", "rain-audio"].forEach(id => {
+        const media = document.getElementById(id);
+        media.pause();
+        media.currentTime = 0;
+      });
+    }
+
+    function setAtmosphere(mode, fromUser) {
+      stopAtmosphereMedia();
+      document.body.classList.remove("theme-dark", "theme-rain", "atmosphere-sun", "atmosphere-night", "atmosphere-rain");
+      if (mode === "sun") {
+        document.body.classList.add("atmosphere-sun");
+        if (fromUser) {
+          document.getElementById("leaves-overlay").play().catch(() => {});
+          document.getElementById("forest-audio").play().catch(() => {});
+        }
+      } else if (mode === "night") {
+        document.body.classList.add("theme-dark", "atmosphere-night");
+        if (fromUser) {
+          document.getElementById("moon-overlay").play().catch(() => {});
+          document.getElementById("night-audio").play().catch(() => {});
+        }
+      } else if (mode === "rain") {
+        document.body.classList.add("theme-rain", "atmosphere-rain");
+        if (fromUser) {
+          document.getElementById("rain-overlay").play().catch(() => {});
+          document.getElementById("rain-audio").play().catch(() => {});
+        }
+      }
+      document.querySelectorAll(".atmosphere-option").forEach(button => {
+        button.setAttribute("aria-pressed", button.dataset.atmosphere === mode ? "true" : "false");
+      });
+      localStorage.setItem(ATMOSPHERE_KEY, mode);
+    }
+
+    function setPaper(mode) {
+      document.body.classList.toggle("paper-beige", mode === "beige");
+      document.querySelectorAll(".paper-option").forEach(button => {
+        button.setAttribute("aria-pressed", button.dataset.paper === mode ? "true" : "false");
+      });
+      localStorage.setItem(PAPER_KEY, mode);
+    }
+
+    function initSettings() {
+      const button = document.getElementById("settings-button");
+      const panel = document.getElementById("settings-panel");
+      const close = () => {
+        panel.hidden = true;
+        button.setAttribute("aria-expanded", "false");
+      };
+      button.addEventListener("click", event => {
+        event.stopPropagation();
+        panel.hidden = !panel.hidden;
+        button.setAttribute("aria-expanded", panel.hidden ? "false" : "true");
+      });
+      panel.addEventListener("click", event => event.stopPropagation());
+      document.addEventListener("click", close);
+      document.addEventListener("keydown", event => {
+        if (event.key === "Escape") {
+          close();
+          button.focus();
+        }
+      });
+      document.querySelectorAll(".atmosphere-option").forEach(option => {
+        option.addEventListener("click", () => setAtmosphere(option.dataset.atmosphere, true));
+      });
+      document.querySelectorAll(".paper-option").forEach(option => {
+        option.addEventListener("click", () => setPaper(option.dataset.paper));
+      });
+      setPaper(localStorage.getItem(PAPER_KEY) === "beige" ? "beige" : "gray");
+      const savedAtmosphere = localStorage.getItem(ATMOSPHERE_KEY);
+      setAtmosphere(["plain", "sun", "night", "rain"].includes(savedAtmosphere) ? savedAtmosphere : "plain", false);
+    }
+
+    initSettings();
+    loadArticles()
+      .then(({ articles, fallback }) => {
+        state.articles = articles;
+        renderIndex(fallback);
+        if (!articles.length) {
+          document.getElementById("article-shell").innerHTML = '<p class="article-empty">Публикаций пока нет</p>';
+          return;
+        }
+        const requested = articleIdFromHash();
+        const initial = articles.find(article => article.id === requested) || articles[0];
+        selectArticle(initial.id, false);
+      })
+      .catch(() => {
+        document.getElementById("index-status").textContent = "не удалось загрузить публикации";
+        document.getElementById("article-shell").innerHTML = '<p class="article-empty">Не удалось загрузить публикации</p>';
+      });
+  </script>
+</body>
+</html>

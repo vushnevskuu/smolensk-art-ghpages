@@ -116,6 +116,8 @@ await createOnce("таблица posts", () =>
       { key: "authorId", type: "string", size: 36, required: true },
       { key: "authorName", type: "string", size: 128, required: true },
       { key: "type", type: "string", size: 16, required: true },
+      { key: "title", type: "string", size: 500, required: false, default: "" },
+      { key: "blocksJson", type: "text", required: false, default: "" },
       { key: "text", type: "string", size: 65535, required: true },
       { key: "caption", type: "string", size: 2000, required: true },
       { key: "publishedAt", type: "datetime", required: true },
@@ -140,6 +142,27 @@ await createOnce("таблица posts", () =>
         orders: ["DESC"],
       },
     ],
+  }),
+);
+
+await createOnce("колонка posts.title", () =>
+  tablesDB.createVarcharColumn({
+    databaseId,
+    tableId: postsTableId,
+    key: "title",
+    size: 500,
+    required: false,
+    xdefault: "",
+  }),
+);
+
+await createOnce("колонка posts.blocksJson", () =>
+  tablesDB.createTextColumn({
+    databaseId,
+    tableId: postsTableId,
+    key: "blocksJson",
+    required: false,
+    xdefault: "",
   }),
 );
 
@@ -179,8 +202,12 @@ await createOnce("таблица post-media", () =>
   }),
 );
 
-await createOnce("bucket post-media", () =>
-  storage.createBucket({
+try {
+  await storage.getBucket({ bucketId });
+  console.log("Уже существует: bucket post-media");
+} catch (error) {
+  if (!isNotFound(error)) throw error;
+  await storage.createBucket({
     bucketId,
     name: "Медиа публикаций",
     permissions: authorCreate,
@@ -192,8 +219,9 @@ await createOnce("bucket post-media", () =>
     encryption: true,
     antivirus: true,
     transformations: true,
-  }),
-);
+  });
+  console.log("Создано: bucket post-media");
+}
 
 console.log("\nAppwrite готов.");
 console.log("Выдавайте приглашённым пользователям label `author`.");

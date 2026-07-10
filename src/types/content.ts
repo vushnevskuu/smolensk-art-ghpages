@@ -10,10 +10,38 @@ export const postTypes = [
 
 export type PostType = (typeof postTypes)[number];
 
+export const contentBlockTypes = [
+  "text",
+  "image",
+  "gallery",
+  "video",
+  "animation",
+] as const;
+
+export type ContentBlockType = (typeof contentBlockTypes)[number];
+
+export interface TextContentBlock {
+  id: string;
+  type: "text";
+  text: string;
+}
+
+export interface MediaContentBlock {
+  id: string;
+  type: Exclude<ContentBlockType, "text">;
+  caption: string;
+  alt: string;
+  fileIds: string[];
+}
+
+export type ContentBlock = TextContentBlock | MediaContentBlock;
+
 export interface PostRow extends Models.Row {
   authorId: string;
   authorName: string;
   type: PostType;
+  title?: string;
+  blocksJson?: string;
   text: string;
   caption: string;
   publishedAt: string;

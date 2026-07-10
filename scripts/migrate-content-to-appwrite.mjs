@@ -82,6 +82,19 @@ function mediaEntries(item) {
   return [];
 }
 
+function publicFileUrl(fileId) {
+  const base = endpoint.replace(/\/$/, "");
+  return `${base}/storage/buckets/${encodeURIComponent(bucketId)}/files/${encodeURIComponent(fileId)}/view?project=${encodeURIComponent(projectId)}`;
+}
+
+function articleTitle(item) {
+  const source =
+    plainText(item.captionHtml ?? item.caption) ||
+    plainText(item.text ?? item.message ?? item.html).split("\n")[0] ||
+    "Без названия";
+  return source.length > 500 ? `${source.slice(0, 497)}...` : source;
+}
+
 function isNotFound(error) {
   return (
     error &&
@@ -147,12 +160,35 @@ for (const item of items) {
       });
     }
 
+    const text = plainText(item.text ?? item.message ?? item.html);
+    const caption = plainText(item.captionHtml ?? item.caption);
+    const type = appwriteType(item);
+    const blocks = [];
+    if (uploaded.length > 0) {
+      blocks.push({
+        id: `${postId}-media`,
+        type,
+        caption,
+        alt: uploaded[0]?.alt ?? "",
+        fileIds: uploaded.map((mediaItem) => mediaItem.fileId),
+      });
+    }
+    if (text) {
+      blocks.push({
+        id: `${postId}-text`,
+        type: "text",
+        text,
+      });
+    }
+
     const postData = {
       authorId,
       authorName,
-      type: appwriteType(item),
-      text: plainText(item.text ?? item.message ?? item.html),
-      caption: plainText(item.captionHtml ?? item.caption),
+      type,
+      title: articleTitle(item),
+      blocksJson: JSON.stringify(blocks),
+      text,
+      caption,
       publishedAt: new Date(item.ts ?? Date.now()).toISOString(),
       featured: Boolean(item.featured),
     };
@@ -176,29 +212,36 @@ for (const item of items) {
     }
 
     for (const mediaItem of uploaded) {
-      if (await rowExists(mediaTableId, mediaItem.rowId)) continue;
-      const url = String(storage.getFileView({
-        bucketId,
+      const rowId = mediaItem.rowId || ID.unique();
+      const data = {
+        postId,
         fileId: mediaItem.fileId,
-      }));
-      await tablesDB.createRow({
-        databaseId,
-        tableId: mediaTableId,
-        rowId: mediaItem.rowId || ID.unique(),
-        data: {
-          postId,
-          fileId: mediaItem.fileId,
-          url,
-          name: mediaItem.name,
-          mimeType: mediaItem.mimeType,
-          size: mediaItem.size,
-          width: 0,
-          height: 0,
-          alt: mediaItem.alt,
-          position: mediaItem.position,
-        },
-        permissions,
-      });
+        url: publicFileUrl(mediaItem.fileId),
+        name: mediaItem.name,
+        mimeType: mediaItem.mimeType,
+        size: mediaItem.size,
+        width: 0,
+        height: 0,
+        alt: mediaItem.alt,
+        position: mediaItem.position,
+      };
+      if (await rowExists(mediaTableId, rowId)) {
+        await tablesDB.updateRow({
+          databaseId,
+          tableId: mediaTableId,
+          rowId,
+          data,
+          permissions,
+        });
+      } else {
+        await tablesDB.createRow({
+          databaseId,
+          tableId: mediaTableId,
+          rowId,
+          data,
+          permissions,
+        });
+      }
     }
 
     console.log(`Синхронизирован пост: ${postId}`);
