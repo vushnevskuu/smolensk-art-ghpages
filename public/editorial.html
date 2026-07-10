@@ -350,7 +350,7 @@
       margin-top: 13px;
       max-width: 62ch;
       color: var(--muted);
-      font-size: calc(13px * var(--article-font-scale));
+      font-size: calc(var(--index-meta-size) * var(--index-font-scale));
       line-height: 1.45;
     }
 
@@ -495,7 +495,7 @@
     @media (max-width: 768px) {
       :root {
         --header-height: 72px;
-        --index-heading-size: clamp(23px, 7.5vw, 35px);
+        --index-meta-size: 14px;
       }
       body { overflow-y: auto; }
       .site-header {
@@ -528,7 +528,7 @@
       .index-title {
         padding-left: 28px;
       }
-      .index-date { font-size: calc(14px * var(--index-font-scale)); }
+      .index-date { font-size: calc(var(--index-meta-size) * var(--index-font-scale)); }
       .article-view {
         display: none;
         padding: calc(var(--header-height) + 18px) 18px 180px;
@@ -541,7 +541,7 @@
       }
       .article-text {
         max-width: none;
-        font-size: clamp(16px, calc(18px * var(--article-font-scale)), 25px);
+        font-size: calc(var(--article-body-size) * var(--article-font-scale));
         line-height: 1.5;
       }
       .site-footer {
