@@ -32,6 +32,7 @@ jobs:
         env:
           STATIC_EXPORT: "1"
           PAGES_BASE_PATH: /${{ github.event.repository.name }}
+          NEXT_PUBLIC_SITE_VERSION: ${{ github.sha }}
           NEXT_PUBLIC_APPWRITE_ENDPOINT: ${{ vars.NEXT_PUBLIC_APPWRITE_ENDPOINT }}
           NEXT_PUBLIC_APPWRITE_PROJECT_ID: ${{ vars.NEXT_PUBLIC_APPWRITE_PROJECT_ID }}
           NEXT_PUBLIC_APPWRITE_DATABASE_ID: smolensk-art
