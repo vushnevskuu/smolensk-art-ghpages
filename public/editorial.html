@@ -22,8 +22,10 @@
       --header-height: 80px;
       --footer-height: 82px;
       --index-font-scale: 1;
-      --index-heading-size: clamp(21px, 2.625vw, 40px);
+      --index-heading-size: 24px;
+      --index-meta-size: clamp(13px, 1.15vw, 18px);
       --article-font-scale: 1;
+      --article-body-size: 24px;
       --ease: cubic-bezier(0.22, 1, 0.36, 1);
     }
 
@@ -269,7 +271,7 @@
       display: block;
       margin-bottom: 14px;
       color: var(--muted);
-      font-size: calc(clamp(13px, 1.15vw, 18px) * var(--index-font-scale));
+      font-size: calc(var(--index-meta-size) * var(--index-font-scale));
       font-variant-numeric: tabular-nums;
       opacity: 0.67;
       transition: color 180ms ease, opacity 180ms ease;
@@ -324,7 +326,7 @@
     .article-text {
       width: 100%;
       max-width: 720px;
-      font-size: clamp(16px, calc(20px * var(--article-font-scale)), 28px);
+      font-size: calc(var(--article-body-size) * var(--article-font-scale));
       line-height: 1.48;
       letter-spacing: -0.01em;
       white-space: normal;
