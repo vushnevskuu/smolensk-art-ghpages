@@ -153,7 +153,9 @@
       height: 27px;
       object-fit: contain;
     }
+    .telegram-icon-image { filter: brightness(0) invert(1); }
     body.paper-beige .header-icon-image { filter: invert(1); }
+    body.paper-beige .telegram-icon-image { filter: brightness(0); }
     .header-icon:hover,
     .header-icon[aria-expanded="true"] {
       color: var(--text);
@@ -451,9 +453,7 @@
     </p>
     <div class="header-actions">
       <a class="header-icon" href="https://t.me/smolenskart" target="_blank" rel="noopener noreferrer" aria-label="Телеграм-канал">
-        <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
-          <path d="M21 3 3.8 9.65c-1.17.47-1.16 1.12-.21 1.41l4.42 1.38L18.25 6c.48-.3.93-.14.56.19l-8.3 7.5-.32 4.38c.47 0 .68-.21.94-.46l2.25-2.18 4.68 3.45c.86.48 1.48.23 1.7-.8L22.84 4.6C23.16 3.32 22.35 2.74 21 3Z" fill="currentColor"/>
-        </svg>
+        <img class="header-icon-image telegram-icon-image" src="telegram-drawn.png" alt="">
       </a>
       <button class="header-icon" id="settings-button" type="button" aria-label="Эффекты и атмосфера" aria-expanded="false" aria-controls="settings-panel">
         <img class="header-icon-image" src="sun-drawn.png" alt="">
