@@ -16,7 +16,8 @@
       --faint: #5f5d58;
       --line: rgba(255, 255, 255, 0.15);
       --panel: rgba(13, 13, 13, 0.94);
-      --header-height: 104px;
+      --header-height: 80px;
+      --footer-height: 104px;
       --index-font-scale: 1;
       --article-font-scale: 1;
       --ease: cubic-bezier(0.22, 1, 0.36, 1);
@@ -95,7 +96,7 @@
       inset: 0 0 auto;
       height: var(--header-height);
       display: grid;
-      grid-template-columns: 96px minmax(0, 1fr) 96px;
+      grid-template-columns: 1fr auto;
       align-items: center;
       gap: clamp(22px, 4vw, 64px);
       padding: 18px 32px;
@@ -112,23 +113,6 @@
       opacity: 0.9;
     }
     body.paper-beige .brand-logo { filter: none; }
-    .brand-copy {
-      justify-self: center;
-      width: min(1040px, 100%);
-      text-align: center;
-      font-size: 13px;
-      line-height: 1.2;
-      color: var(--muted);
-    }
-    .brand-copy strong {
-      display: block;
-      margin-bottom: 5px;
-      color: var(--text);
-      font-size: 26px;
-      font-weight: 700;
-      line-height: 1.05;
-      text-transform: uppercase;
-    }
     .header-actions {
       justify-self: end;
       display: flex;
@@ -203,7 +187,7 @@
       z-index: 10;
       display: grid;
       grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-      height: 100dvh;
+      height: calc(100dvh - var(--footer-height));
     }
 
     .article-index,
@@ -219,6 +203,27 @@
     .article-index {
       padding: calc(var(--header-height) + 25px) 32px 180px;
     }
+    .index-search {
+      display: block;
+      margin-bottom: clamp(34px, 4vw, 52px);
+    }
+    .index-search-input {
+      width: 100%;
+      min-height: 48px;
+      padding: 8px 2px;
+      border: 0;
+      border-bottom: 1px solid var(--line);
+      border-radius: 0;
+      outline: 0;
+      background: transparent;
+      color: var(--text);
+      font-size: 17px;
+      line-height: 1.2;
+      transition: border-color 180ms ease;
+    }
+    .index-search-input::placeholder { color: var(--faint); opacity: 1; }
+    .index-search-input:focus { border-bottom-color: var(--text); }
+    .index-search-input::-webkit-search-cancel-button { cursor: pointer; }
     .index-list { list-style: none; }
     .index-item + .index-item { margin-top: 43px; }
     .index-button {
@@ -339,6 +344,38 @@
       color: var(--muted);
       font-size: calc(12px * var(--index-font-scale));
     }
+    .search-empty {
+      color: var(--muted);
+      font-size: 18px;
+      line-height: 1.35;
+    }
+
+    .site-footer {
+      position: fixed;
+      z-index: 20;
+      inset: auto 0 0;
+      min-height: var(--footer-height);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 14px 32px 18px;
+      text-align: center;
+      pointer-events: none;
+    }
+    .footer-name {
+      margin-bottom: 5px;
+      color: var(--muted);
+      font-size: 13px;
+    }
+    .footer-statement {
+      width: 100%;
+      color: var(--text);
+      font-size: clamp(18px, 2vw, 28px);
+      font-weight: 700;
+      line-height: 1.05;
+      text-transform: uppercase;
+    }
 
     .atmosphere-media {
       position: fixed;
@@ -370,25 +407,16 @@
     }
 
     @media (max-width: 768px) {
-      :root { --header-height: 90px; }
+      :root { --header-height: 72px; }
       body { overflow-y: auto; }
       .site-header {
         position: fixed;
         height: var(--header-height);
-        grid-template-columns: 48px minmax(0, 1fr) auto;
+        grid-template-columns: 1fr auto;
         gap: 10px;
         padding: 12px 14px;
       }
       .brand-logo { width: 46px; }
-      .brand-copy {
-        font-size: 9px;
-        line-height: 1.25;
-      }
-      .brand-copy strong {
-        margin-bottom: 2px;
-        font-size: 12px;
-        line-height: 1.05;
-      }
       .header-actions { gap: 0; }
       .header-icon { width: 38px; height: 38px; }
       .header-icon svg { width: 19px; height: 19px; }
@@ -407,6 +435,7 @@
       .article-index {
         padding: calc(var(--header-height) + 28px) 18px 180px;
       }
+      .index-search { margin-bottom: 36px; }
       .index-item + .index-item { margin-top: 36px; }
       .index-title {
         padding-left: 28px;
@@ -428,6 +457,19 @@
         font-size: clamp(16px, calc(18px * var(--article-font-scale)), 25px);
         line-height: 1.5;
       }
+      .site-footer {
+        position: static;
+        min-height: 0;
+        padding: 30px 18px 40px;
+      }
+      .footer-name {
+        margin-bottom: 7px;
+        font-size: 11px;
+      }
+      .footer-statement {
+        font-size: clamp(16px, 5vw, 21px);
+        line-height: 1.08;
+      }
     }
   </style>
 </head>
@@ -436,10 +478,6 @@
     <div class="header-logo">
       <img class="brand-logo" src="smolensk-logo.svg" alt="Смоленск Арт" width="79" height="40">
     </div>
-    <p class="brand-copy">
-      <strong>Открытое автономное исследовательско-художественное сообщество</strong>
-      Смоленск Арт
-    </p>
     <div class="header-actions">
       <a class="header-icon" href="https://t.me/smolenskart" target="_blank" rel="noopener noreferrer" aria-label="Телеграм-канал">
         <img class="header-icon-image telegram-icon-image" src="telegram-drawn.png" alt="">
@@ -471,6 +509,9 @@
 
   <main class="archive-layout">
     <nav class="article-index" aria-label="Список статей">
+      <label class="index-search">
+        <input class="index-search-input" id="article-search" type="search" placeholder="Поиск по заголовкам" autocomplete="off" aria-label="Поиск по заголовкам">
+      </label>
       <div class="status-message" id="index-status">загрузка_</div>
       <ol class="index-list" id="index-list"></ol>
     </nav>
@@ -481,6 +522,11 @@
     </section>
   </main>
 
+  <footer class="site-footer">
+    <p class="footer-name">Смоленск Арт</p>
+    <p class="footer-statement">Открытое автономное исследовательско-художественное сообщество</p>
+  </footer>
+
   <video class="atmosphere-media" id="leaves-overlay" src="leaves-wall.mp4" loop muted playsinline preload="none"></video>
   <audio id="forest-audio" src="forest.mp3" loop preload="none"></audio>
   <video class="atmosphere-media" id="moon-overlay" src="moon.mp4" loop muted playsinline preload="none"></video>
@@ -490,7 +536,7 @@
 
   <script src="appwrite-config.js"></script>
   <script>
-    const state = { articles: [], selectedId: null };
+    const state = { articles: [], selectedId: null, fallback: false, searchQuery: "" };
     const PAPER_KEY = "smolenskPaperBgV2";
     const ATMOSPHERE_KEY = "smolenskAtmosphereV2";
 
@@ -526,10 +572,18 @@
       );
     }
 
+    function stripHashtags(value) {
+      return String(value || "")
+        .replace(/(^|\s)#[\p{L}\p{N}_-]+/gu, "$1")
+        .replace(/[ \t]+$/gm, "")
+        .trim();
+    }
+
     function deriveTitle(item) {
       const raw = item.title || item.caption || item.captionHtml || item.text || item.message || "Без названия";
-      const plain = String(raw).replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim();
-      const shortened = plain.length > 110 ? `${plain.slice(0, 107)}...` : plain;
+      const plain = stripHashtags(String(raw).replace(/<[^>]+>/g, " ")).replace(/\s+/g, " ").trim();
+      const prepared = plain || "Без названия";
+      const shortened = prepared.length > 110 ? `${prepared.slice(0, 107)}...` : prepared;
       return uppercaseFirstLetter(shortened);
     }
 
@@ -669,18 +723,28 @@
       }
     }
 
-    function renderIndex(fallback) {
+    function renderIndex() {
       const list = document.getElementById("index-list");
       const status = document.getElementById("index-status");
+      const query = state.searchQuery.trim().toLocaleLowerCase("ru-RU");
+      const articles = query
+        ? state.articles.filter(article => article.title.toLocaleLowerCase("ru-RU").includes(query))
+        : state.articles;
       status.hidden = true;
       list.innerHTML = "";
-      if (fallback) {
+      if (state.fallback) {
         const notice = document.createElement("li");
         notice.className = "fallback-message";
         notice.textContent = "Онлайн-лента временно недоступна. Показана сохранённая копия.";
         list.appendChild(notice);
       }
-      state.articles.forEach(article => {
+      if (!articles.length) {
+        const empty = document.createElement("li");
+        empty.className = "search-empty";
+        empty.textContent = query ? "Ничего не найдено" : "Публикаций пока нет";
+        list.appendChild(empty);
+      }
+      articles.forEach(article => {
         const item = document.createElement("li");
         item.className = "index-item";
         item.innerHTML =
@@ -696,7 +760,7 @@
     }
 
     function paragraphHtml(text) {
-      return String(text || "")
+      return stripHashtags(text)
         .split(/\n+/)
         .filter(Boolean)
         .map(paragraph => `<p>${escapeHtml(normalizeSentenceCase(paragraph.trim()))}</p>`)
@@ -718,8 +782,9 @@
       }
       const media = block.media || [];
       if (!media.length) return "";
-      const caption = block.caption
-        ? `<figcaption class="media-caption">${escapeHtml(block.caption)}</figcaption>`
+      const cleanCaption = stripHashtags(block.caption);
+      const caption = cleanCaption
+        ? `<figcaption class="media-caption">${escapeHtml(cleanCaption)}</figcaption>`
         : "";
       if (block.type === "gallery" && media.length > 1) {
         const slides = media.map((item, slideIndex) =>
@@ -875,11 +940,21 @@
       setAtmosphere(["plain", "sun", "night", "rain"].includes(savedAtmosphere) ? savedAtmosphere : "plain", false);
     }
 
+    function initSearch() {
+      const input = document.getElementById("article-search");
+      input.addEventListener("input", () => {
+        state.searchQuery = input.value;
+        renderIndex();
+      });
+    }
+
     initSettings();
+    initSearch();
     loadArticles()
       .then(({ articles, fallback }) => {
         state.articles = articles;
-        renderIndex(fallback);
+        state.fallback = fallback;
+        renderIndex();
         if (!articles.length) {
           document.getElementById("article-shell").innerHTML = '<p class="article-empty">Публикаций пока нет</p>';
           return;
