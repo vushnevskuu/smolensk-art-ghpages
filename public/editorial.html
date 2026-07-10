@@ -267,7 +267,8 @@
       color: var(--muted);
       font-size: calc(clamp(13px, 1.15vw, 18px) * var(--index-font-scale));
       font-variant-numeric: tabular-nums;
-      transition: color 180ms ease;
+      opacity: 0.67;
+      transition: color 180ms ease, opacity 180ms ease;
     }
     .index-title {
       display: block;
@@ -278,14 +279,14 @@
       line-height: 1.08;
       letter-spacing: -0.035em;
       overflow-wrap: anywhere;
-      transition: color 180ms ease;
+      opacity: 0.67;
+      transition: color 180ms ease, opacity 180ms ease;
     }
     .index-button:hover .index-title,
-    .index-button[aria-current="true"] .index-title {
+    .index-button:hover .index-date {
       color: var(--text);
+      opacity: 1;
     }
-    .index-button:hover .index-date,
-    .index-button[aria-current="true"] .index-date { color: var(--text); }
 
     .article-view { padding: calc(var(--header-height) + 28px) 40px 180px; }
     .article-shell {
