@@ -16,7 +16,7 @@
       --faint: #5f5d58;
       --line: rgba(255, 255, 255, 0.15);
       --panel: rgba(13, 13, 13, 0.94);
-      --header-height: 80px;
+      --header-height: 96px;
       --footer-height: 82px;
       --index-font-scale: 1;
       --article-font-scale: 1;
@@ -107,7 +107,7 @@
     .header-logo { justify-self: start; }
     .brand-logo {
       display: block;
-      width: 64px;
+      width: 96px;
       height: auto;
       filter: invert(1) grayscale(1);
       opacity: 0.9;
@@ -131,23 +131,22 @@
     }
     .header-icon {
       display: inline-grid;
-      width: 44px;
-      height: 44px;
+      width: 60px;
+      height: 60px;
       place-items: center;
       color: var(--muted);
       text-decoration: none;
       transition: transform 180ms var(--ease);
     }
-    .header-icon svg { width: 21px; height: 21px; }
     .header-icon-image {
-      width: 27px;
-      height: 27px;
+      width: 41px;
+      height: 41px;
       object-fit: contain;
-      filter: brightness(0) invert(1);
+      filter: brightness(0) invert(1) contrast(1.18);
       opacity: 0.72;
       transition: filter 180ms ease, opacity 180ms ease, transform 180ms var(--ease);
     }
-    body.paper-beige .header-icon-image { filter: brightness(0); }
+    body.paper-beige .header-icon-image { filter: brightness(0) contrast(1.18); }
     .header-icon:hover .header-icon-image,
     .header-icon[aria-expanded="true"] .header-icon-image {
       opacity: 1;
@@ -158,7 +157,7 @@
     .settings-panel {
       position: fixed;
       z-index: 40;
-      top: 72px;
+      top: 84px;
       right: 32px;
       width: min(320px, calc(100vw - 32px));
       padding: 20px;
@@ -212,6 +211,7 @@
       padding: calc(var(--header-height) + 25px) 32px 180px;
     }
     .index-search {
+      position: relative;
       display: block;
       margin-bottom: clamp(34px, 4vw, 52px);
     }
@@ -227,8 +227,33 @@
       font-weight: 700;
       line-height: 1.08;
     }
+    .index-search.has-value .index-search-input {
+      padding-right: clamp(28px, 3vw, 40px);
+    }
     .index-search-input::placeholder { color: var(--muted); opacity: 1; }
-    .index-search-input::-webkit-search-cancel-button { cursor: pointer; }
+    .index-search-input::-webkit-search-cancel-button,
+    .index-search-input::-webkit-search-decoration,
+    .index-search-input::-moz-search-clear-button {
+      display: none;
+      appearance: none;
+      -webkit-appearance: none;
+    }
+    .index-search-clear {
+      position: absolute;
+      top: 50%;
+      right: 0;
+      width: clamp(22px, 2.2vw, 30px);
+      height: clamp(22px, 2.2vw, 30px);
+      color: var(--text);
+      font-size: clamp(22px, 2.2vw, 30px);
+      font-weight: 700;
+      line-height: 1;
+      opacity: 0.72;
+      transform: translateY(-50%);
+      transition: opacity 180ms ease, transform 180ms var(--ease);
+    }
+    .index-search-clear:hover { opacity: 1; }
+    .index-search-clear:active { transform: translateY(-50%) scale(0.94); }
     .index-list { list-style: none; }
     .index-item + .index-item { margin-top: 43px; }
     .index-button {
@@ -328,9 +353,11 @@
     }
     .gallery-track {
       position: relative;
-      aspect-ratio: 1 / 1;
+      width: 100%;
+      min-height: 120px;
       overflow: hidden;
       background: color-mix(in srgb, var(--text) 5%, transparent);
+      transition: height 220ms ease;
     }
     .gallery-slide {
       position: absolute;
@@ -356,9 +383,9 @@
     }
     .gallery-slide img,
     .gallery-slide video {
+      display: block;
       width: 100%;
-      height: 100%;
-      object-fit: contain;
+      height: auto;
       opacity: 0;
       transition: opacity 220ms ease;
     }
@@ -380,6 +407,9 @@
       min-width: 34px;
       min-height: 34px;
       color: var(--muted);
+      font-size: 22px;
+      font-weight: 700;
+      line-height: 1;
     }
     .gallery-action:hover { color: var(--text); }
 
@@ -456,21 +486,20 @@
     }
 
     @media (max-width: 768px) {
-      :root { --header-height: 72px; }
+      :root { --header-height: 82px; }
       body { overflow-y: auto; }
       .site-header {
         position: fixed;
         height: var(--header-height);
-        grid-template-columns: 48px minmax(0, 1fr) auto;
+        grid-template-columns: 70px minmax(0, 1fr) auto;
         gap: 10px;
-        padding: 12px 14px;
+        padding: 10px 14px;
       }
-      .brand-logo { width: 46px; }
+      .brand-logo { width: 69px; }
       .header-actions { gap: 0; }
-      .header-icon { width: 38px; height: 38px; }
-      .header-icon svg { width: 19px; height: 19px; }
-      .header-icon-image { width: 24px; height: 24px; }
-      .settings-panel { top: 74px; right: 14px; }
+      .header-icon { width: 52px; height: 52px; }
+      .header-icon-image { width: 36px; height: 36px; }
+      .settings-panel { top: 76px; right: 14px; }
       .archive-layout {
         display: block;
         height: auto;
@@ -562,8 +591,9 @@
 
   <main class="archive-layout">
     <nav class="article-index" aria-label="Список статей">
-      <label class="index-search">
+      <label class="index-search" id="article-search-wrap">
         <input class="index-search-input" id="article-search" type="search" placeholder="Поиск" autocomplete="off" aria-label="Поиск по публикациям">
+        <button class="index-search-clear" id="article-search-clear" type="button" hidden aria-label="Очистить поиск">×</button>
       </label>
       <div class="status-message" id="index-status">загрузка_</div>
       <ol class="index-list" id="index-list"></ol>
@@ -905,16 +935,49 @@
 
     function initGalleries(scope) {
       scope.querySelectorAll("[data-gallery]").forEach(gallery => {
+        const track = gallery.querySelector(".gallery-track");
         const slides = Array.from(gallery.querySelectorAll(".gallery-slide"));
         const count = gallery.querySelector(".gallery-count");
         let active = 0;
+
+        const syncTrackHeight = () => {
+          if (!track) return;
+          const slide = slides[active];
+          const media = slide?.querySelector("img, video");
+          if (!media) {
+            track.style.height = "";
+            track.style.minHeight = "120px";
+            return;
+          }
+          const setHeight = () => {
+            const width = media.naturalWidth || media.videoWidth || 0;
+            const height = media.naturalHeight || media.videoHeight || 0;
+            if (!width || !height) return;
+            const trackWidth = track.getBoundingClientRect().width;
+            if (!trackWidth) return;
+            track.style.minHeight = "0";
+            track.style.height = `${(trackWidth * height) / width}px`;
+          };
+          if (media instanceof HTMLImageElement) {
+            if (media.complete && media.naturalWidth > 0) setHeight();
+            else media.addEventListener("load", setHeight, { once: true });
+          } else if (media.readyState >= HTMLMediaElement.HAVE_METADATA) {
+            setHeight();
+          } else {
+            media.addEventListener("loadedmetadata", setHeight, { once: true });
+          }
+        };
+
         slides.forEach(slide => {
           const media = slide.querySelector("img, video");
           if (!media) {
             slide.classList.add("is-error");
             return;
           }
-          const markLoaded = () => slide.classList.add("is-loaded");
+          const markLoaded = () => {
+            slide.classList.add("is-loaded");
+            if (slide.classList.contains("is-active")) syncTrackHeight();
+          };
           const markError = () => slide.classList.add("is-error");
           if (media instanceof HTMLImageElement) {
             media.loading = "eager";
@@ -932,11 +995,22 @@
             media.addEventListener("error", markError, { once: true });
           }
         });
+
         const show = next => {
           active = (next + slides.length) % slides.length;
           slides.forEach((slide, index) => slide.classList.toggle("is-active", index === active));
           count.textContent = `${active + 1} / ${slides.length}`;
+          syncTrackHeight();
         };
+
+        if (typeof ResizeObserver !== "undefined" && track) {
+          const observer = new ResizeObserver(() => syncTrackHeight());
+          observer.observe(track);
+        } else {
+          window.addEventListener("resize", syncTrackHeight);
+        }
+
+        syncTrackHeight();
         gallery.querySelector(".gallery-prev").addEventListener("click", () => show(active - 1));
         gallery.querySelector(".gallery-next").addEventListener("click", () => show(active + 1));
       });
@@ -1076,11 +1150,31 @@
     }
 
     function initSearch() {
+      const wrap = document.getElementById("article-search-wrap");
       const input = document.getElementById("article-search");
+      const clear = document.getElementById("article-search-clear");
+
+      const syncClear = () => {
+        const hasValue = Boolean(input.value);
+        clear.hidden = !hasValue;
+        wrap.classList.toggle("has-value", hasValue);
+      };
+
       input.addEventListener("input", () => {
         state.searchQuery = input.value;
         renderIndex();
+        syncClear();
       });
+
+      clear.addEventListener("click", () => {
+        input.value = "";
+        state.searchQuery = "";
+        renderIndex();
+        syncClear();
+        input.focus();
+      });
+
+      syncClear();
     }
 
     initSettings();
