@@ -15,6 +15,7 @@ dist/
 .env.development.local
 .env.test.local
 .env.production.local
+.env.appwrite.local
 
 # Debug
 npm-debug.log*
@@ -40,5 +41,6 @@ next-env.d.ts
 
 # Собирается из src/data/content-ru.json (predev / prebuild)
 public/content.json
+public/appwrite-config.js
 
 temp/

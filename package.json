@@ -9,15 +9,24 @@
     "url": "https://github.com/vushnevskuu/smolensk-art-ghpages.git"
   },
   "homepage": "https://vushnevskuu.github.io/smolensk-art-ghpages/",
-  "keywords": ["smolensk", "nextjs", "github-pages"],
+  "keywords": [
+    "smolensk",
+    "nextjs",
+    "github-pages"
+  ],
   "engines": {
     "node": ">=24"
   },
   "scripts": {
     "sync-content": "node -e \"require('fs').copyFileSync('src/data/content-ru.json','public/content.json')\"",
-    "predev": "npm run sync-content",
-    "prebuild": "npm run sync-content",
-    "dev": "next dev",
+    "write-appwrite-config": "node scripts/write-appwrite-config.mjs",
+    "predev": "npm run sync-content && npm run write-appwrite-config",
+    "prebuild": "npm run sync-content && npm run write-appwrite-config",
+    "appwrite:setup": "node --env-file=.env.appwrite.local scripts/setup-appwrite.mjs",
+    "appwrite:invite": "node --env-file=.env.appwrite.local scripts/invite-appwrite-author.mjs",
+    "appwrite:migrate": "node --env-file=.env.appwrite.local scripts/migrate-content-to-appwrite.mjs",
+    "appwrite:verify": "node --env-file=.env.appwrite.local scripts/verify-appwrite-permissions.mjs",
+    "dev": "next dev --webpack",
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
@@ -26,6 +35,8 @@
   },
   "dependencies": {
     "@base-ui/react": "^1.3.0",
+    "appwrite": "^26.1.0",
+    "browser-image-compression": "^2.0.2",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "lucide-react": "^1.6.0",
@@ -43,6 +54,7 @@
     "@types/react-dom": "^19",
     "eslint": "^9",
     "eslint-config-next": "16.2.1",
+    "node-appwrite": "^26.2.0",
     "tailwindcss": "^4",
     "typescript": "^5"
   }

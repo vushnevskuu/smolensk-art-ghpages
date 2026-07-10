@@ -582,6 +582,7 @@
 
   </div>
 
+  <script src="appwrite-config.js"></script>
   <script>
     function escapeHtml(str) {
       return String(str)
@@ -604,7 +605,7 @@
 
     /** Текстовое сообщение (thoughts, messages или type: message) */
     function thoughtMessageInnerHtml(item) {
-      if (item.html != null) return item.html;
+      if (item.html != null) return escapeHtml(stripHtmlQuick(item.html));
       return escapeHtml(item.text || item.message || '');
     }
 
@@ -637,15 +638,15 @@
     }
 
     function gallerySlideTitleHtml(slideIm, galleryItem) {
-      if (slideIm.captionHtml) return slideIm.captionHtml;
+      if (slideIm.captionHtml) return escapeHtml(stripHtmlQuick(slideIm.captionHtml));
       if (slideIm.caption) return escapeHtml(slideIm.caption);
-      if (galleryItem.captionHtml) return galleryItem.captionHtml;
+      if (galleryItem.captionHtml) return escapeHtml(stripHtmlQuick(galleryItem.captionHtml));
       if (galleryItem.caption) return escapeHtml(galleryItem.caption);
       return '';
     }
 
     function imagePostTitleHtml(img) {
-      if (img.captionHtml) return img.captionHtml;
+      if (img.captionHtml) return escapeHtml(stripHtmlQuick(img.captionHtml));
       if (img.caption) return escapeHtml(img.caption);
       return '';
     }
@@ -850,7 +851,7 @@
           const total = item.images.length;
           const slides = item.images.map((im, i) =>
             `<div class="gallery-slide${i === 0 ? ' active' : ''}">` +
-            `<div class="img-wrap"><img src="${escapeHtml(im.url)}" class="entry-img" alt=""></div>` +
+            `<div class="img-wrap"><img src="${escapeHtml(im.url)}" class="entry-img" alt="${escapeHtml(im.alt || '')}"></div>` +
             `</div>`
           ).join('');
           mediaHtml = `<div class="gallery-wrap"><div class="gallery-slides">${slides}</div></div>`;
@@ -861,8 +862,8 @@
             `<span class="gallery-counter">1/${total}</span>` +
             `<button type="button" class="gallery-btn btn-next"${total <= 1 ? ' style="visibility:hidden"' : ''}>▶</button>`;
         } else if (item.type === 'gif') {
-          mediaHtml = item.url.endsWith('.gif')
-            ? `<div class="img-wrap"><img src="${escapeHtml(item.url)}" class="entry-img" alt=""></div>`
+          mediaHtml = item.mimeType === 'image/gif' || item.url.endsWith('.gif')
+            ? `<div class="img-wrap"><img src="${escapeHtml(item.url)}" class="entry-img" alt="${escapeHtml(item.alt || '')}"></div>`
             : `<video src="${escapeHtml(item.url)}" autoplay loop muted playsinline class="entry-img" style="display:block;width:100%;height:auto;"></video>`;
           titleHtml = imagePostTitleHtml(item);
           navClass += ' blog-post-nav--single';
@@ -872,7 +873,7 @@
             `<button type="button" class="gallery-btn btn-next" style="visibility:hidden">▶</button>`;
         } else {
           mediaHtml = `<div class="img-wrap">` +
-            `<img src="${escapeHtml(item.url)}" class="entry-img" loading="lazy" alt=""></div>`;
+            `<img src="${escapeHtml(item.url)}" class="entry-img" loading="lazy" alt="${escapeHtml(item.alt || '')}"></div>`;
           titleHtml = imagePostTitleHtml(item);
           navClass += ' blog-post-nav--single';
           navHtml =
@@ -882,12 +883,14 @@
         }
 
         if (!bodyHtml && item.bodyHtml) {
-          bodyHtml = `<div class="entry-text blog-post-body-html">${item.bodyHtml}</div>`;
+          bodyHtml = `<div class="entry-text blog-post-body-html">${escapeHtml(stripHtmlQuick(item.bodyHtml))}</div>`;
         } else if (!bodyHtml && item.text != null && item.type !== 'voice') {
           bodyHtml = `<div class="entry-text">${escapeHtml(item.text)}</div>`;
         }
 
-        const cap = item.captionHtml || (item.caption ? escapeHtml(item.caption) : '');
+        const cap = item.captionHtml
+          ? escapeHtml(stripHtmlQuick(item.captionHtml))
+          : (item.caption ? escapeHtml(item.caption) : '');
         if ((item.type === 'video' || item.type === 'video_note' || item.type === 'voice') && cap && !titleHtml)
           titleHtml = cap;
 
@@ -1249,12 +1252,97 @@
       syncLeavesToggleLabel();
     });
 
-    fetch('content.json')
-      .then(r => r.json())
-      .then(({ thoughts = [], images = [], messages = [] }) => {
+    async function fetchAppwriteRows(tableId) {
+      const config = window.SMOLENSK_APPWRITE_CONFIG;
+      if (!config?.endpoint || !config?.projectId) {
+        throw new Error('Appwrite не настроен');
+      }
+      const endpoint = config.endpoint.replace(/\/$/, '');
+      const url = `${endpoint}/tablesdb/${encodeURIComponent(config.databaseId)}` +
+        `/tables/${encodeURIComponent(tableId)}/rows?queries[]=${encodeURIComponent('{"method":"limit","values":[500]}')}`;
+      const response = await fetch(url, {
+        headers: { 'X-Appwrite-Project': config.projectId },
+      });
+      if (!response.ok) throw new Error(`Appwrite: ${response.status}`);
+      const payload = await response.json();
+      return payload.rows || [];
+    }
+
+    async function loadAppwriteContent() {
+      const config = window.SMOLENSK_APPWRITE_CONFIG;
+      const [posts, media] = await Promise.all([
+        fetchAppwriteRows(config.postsTableId),
+        fetchAppwriteRows(config.mediaTableId),
+      ]);
+      const byPost = new Map();
+      media.forEach(item => {
+        const list = byPost.get(item.postId) || [];
+        list.push(item);
+        byPost.set(item.postId, list);
+      });
+      byPost.forEach(list => list.sort((a, b) => a.position - b.position));
+
+      return posts.map(post => {
+        const attached = byPost.get(post.$id) || [];
+        const ts = Date.parse(post.publishedAt || post.$createdAt);
+        const base = {
+          id: post.$id,
+          text: post.text || '',
+          caption: post.caption || '',
+          ts: Number.isNaN(ts) ? Date.now() : ts,
+          featured: Boolean(post.featured),
+          featured_ts: Number.isNaN(ts) ? Date.now() : ts,
+        };
+        if (post.type === 'text') return { ...base, type: 'message' };
+        if (post.type === 'gallery') {
+          return {
+            ...base,
+            type: 'gallery',
+            images: attached.map(item => ({
+              url: item.url,
+              alt: item.alt || '',
+            })),
+          };
+        }
+        if (post.type === 'video') {
+          return { ...base, type: 'video', url: attached[0]?.url || '', alt: attached[0]?.alt || '' };
+        }
+        if (post.type === 'animation') {
+          return {
+            ...base,
+            type: 'gif',
+            url: attached[0]?.url || '',
+            alt: attached[0]?.alt || '',
+            mimeType: attached[0]?.mimeType || '',
+          };
+        }
+        return { ...base, type: 'image', url: attached[0]?.url || '', alt: attached[0]?.alt || '' };
+      });
+    }
+
+    async function loadContent() {
+      try {
+        const items = await loadAppwriteContent();
+        return { thoughts: [], messages: [], images: items, fallback: false };
+      } catch (onlineError) {
+        const response = await fetch('content.json');
+        if (!response.ok) throw onlineError;
+        const local = await response.json();
+        return { ...local, fallback: true };
+      }
+    }
+
+    loadContent()
+      .then(({ thoughts = [], images = [], messages = [], fallback = false }) => {
         const feedItems = [...thoughts, ...messages, ...images].sort(compareFeedItems);
         const feed = document.getElementById('blog-feed');
         renderBlogFeed(feedItems);
+        if (fallback && window.SMOLENSK_APPWRITE_CONFIG?.projectId) {
+          const notice = document.createElement('p');
+          notice.className = 'tag-filter-empty is-visible';
+          notice.textContent = 'Онлайн-лента временно недоступна — показана сохранённая копия.';
+          feed.insertBefore(notice, feed.firstChild);
+        }
         ensureTagFilterUi(feed);
         linkifyRenderedFeed(feed);
         setupReveal(feed);
