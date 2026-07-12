@@ -202,36 +202,110 @@
     .settings-panel {
       position: fixed;
       z-index: 40;
-      top: 72px;
+      top: calc(var(--header-height) - 6px);
       right: 32px;
-      width: min(320px, calc(100vw - 32px));
-      padding: 20px;
-      border: 1px solid var(--line);
-      background: var(--panel);
-      backdrop-filter: blur(18px);
-      box-shadow: 0 18px 60px rgba(0, 0, 0, 0.14);
+      padding: 0;
+      border: 0;
+      background: transparent;
+      box-shadow: none;
+      transform-origin: top right;
+      transition: opacity 200ms var(--ease), transform 220ms var(--ease);
     }
-    .settings-panel[hidden] { display: none; }
-    .settings-group + .settings-group { margin-top: 22px; }
-    .settings-label {
-      margin-bottom: 9px;
-      color: var(--muted);
-      font-size: 11px;
-      letter-spacing: 0.08em;
-      text-transform: uppercase;
+    .settings-panel[hidden] {
+      display: block;
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
+      transform: translateY(-6px) scale(0.98);
     }
-    .settings-options { display: grid; gap: 3px; }
-    .settings-option {
-      min-height: 38px;
+    .settings-panel:not([hidden]) {
+      opacity: 1;
+      visibility: visible;
+      pointer-events: auto;
+      transform: translateY(0) scale(1);
+    }
+    .settings-toolbar {
+      display: flex;
+      align-items: center;
+      gap: 10px;
       padding: 8px 10px;
-      text-align: left;
-      color: var(--muted);
-      font-size: 13px;
+      border: 1px solid color-mix(in srgb, var(--text) 14%, transparent);
+      border-radius: 999px;
+      background:
+        linear-gradient(
+          135deg,
+          color-mix(in srgb, var(--text) 10%, transparent),
+          color-mix(in srgb, var(--text) 4%, transparent)
+        );
+      backdrop-filter: blur(22px) saturate(1.35);
+      -webkit-backdrop-filter: blur(22px) saturate(1.35);
+      box-shadow:
+        0 10px 34px rgba(0, 0, 0, 0.18),
+        inset 0 1px 0 color-mix(in srgb, var(--text) 16%, transparent);
     }
-    .settings-option:hover,
-    .settings-option[aria-pressed="true"] {
+    .settings-group {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .settings-divider {
+      width: 1px;
+      height: 24px;
+      background: color-mix(in srgb, var(--text) 14%, transparent);
+      flex-shrink: 0;
+    }
+    .settings-chip {
+      display: grid;
+      place-items: center;
+      width: 36px;
+      height: 36px;
+      padding: 0;
+      border: 1px solid transparent;
+      border-radius: 999px;
+      color: color-mix(in srgb, var(--text) 72%, transparent);
+      transition:
+        color 180ms ease,
+        background 180ms ease,
+        border-color 180ms ease,
+        transform 180ms var(--ease),
+        box-shadow 180ms ease;
+    }
+    .settings-chip svg {
+      width: 18px;
+      height: 18px;
+      stroke: currentColor;
+      fill: none;
+      stroke-width: 1.6;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+    .settings-chip:hover {
       color: var(--text);
-      background: color-mix(in srgb, var(--text) 8%, transparent);
+      background: color-mix(in srgb, var(--text) 10%, transparent);
+      border-color: color-mix(in srgb, var(--text) 10%, transparent);
+    }
+    .settings-chip[aria-pressed="true"] {
+      color: var(--text);
+      background: color-mix(in srgb, var(--text) 14%, transparent);
+      border-color: color-mix(in srgb, var(--text) 22%, transparent);
+      box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--text) 8%, transparent);
+    }
+    .settings-chip:active { transform: scale(0.94); }
+    .paper-swatch {
+      display: block;
+      width: 16px;
+      height: 16px;
+      border-radius: 4px;
+      border: 1px solid color-mix(in srgb, var(--text) 18%, transparent);
+      box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.04);
+    }
+    .paper-swatch--dark { background: #090909; }
+    .paper-swatch--warm { background: #f2ede4; }
+    .settings-chip.paper-option[aria-pressed="true"] .paper-swatch {
+      border-color: color-mix(in srgb, var(--text) 55%, transparent);
+      box-shadow:
+        0 0 0 1px color-mix(in srgb, var(--text) 35%, transparent),
+        inset 0 0 0 1px rgba(255, 255, 255, 0.08);
     }
 
     .archive-layout {
@@ -514,7 +588,9 @@
       .header-search { max-width: none; }
       .brand-logo { width: 46px; }
       .header-actions { gap: 10px; }
-      .settings-panel { top: 74px; right: 14px; }
+      .settings-panel { top: calc(var(--header-height) - 4px); right: 14px; }
+      .settings-toolbar { gap: 8px; padding: 7px 8px; }
+      .settings-chip { width: 34px; height: 34px; }
       .archive-layout {
         display: block;
         height: auto;
@@ -582,20 +658,29 @@
   </header>
 
   <aside class="settings-panel" id="settings-panel" hidden>
-    <div class="settings-group">
-      <p class="settings-label">Атмосфера</p>
-      <div class="settings-options">
-        <button class="settings-option atmosphere-option" type="button" data-atmosphere="plain" aria-pressed="true">Обычный фон</button>
-        <button class="settings-option atmosphere-option" type="button" data-atmosphere="sun" aria-pressed="false">Солнечный день</button>
-        <button class="settings-option atmosphere-option" type="button" data-atmosphere="night" aria-pressed="false">Ночь</button>
-        <button class="settings-option atmosphere-option" type="button" data-atmosphere="rain" aria-pressed="false">Дождь</button>
+    <div class="settings-toolbar">
+      <div class="settings-group settings-group--atmosphere" role="group" aria-label="Атмосфера">
+        <button class="settings-chip atmosphere-option" type="button" data-atmosphere="plain" aria-pressed="true" aria-label="Обычный фон" title="Обычный фон">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4.5"></circle></svg>
+        </button>
+        <button class="settings-chip atmosphere-option" type="button" data-atmosphere="sun" aria-pressed="false" aria-label="Солнечный день" title="Солнечный день">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3.5"></circle><path d="M12 3.5v2.2M12 18.3v2.2M3.5 12h2.2M18.3 12h2.2M5.8 5.8l1.6 1.6M16.6 16.6l1.6 1.6M5.8 18.2l1.6-1.6M16.6 7.4l1.6-1.6"></path></svg>
+        </button>
+        <button class="settings-chip atmosphere-option" type="button" data-atmosphere="night" aria-pressed="false" aria-label="Ночь" title="Ночь">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15.8 4.6a7.2 7.2 0 1 0 4.6 11.8A6.2 6.2 0 0 1 15.8 4.6z"></path></svg>
+        </button>
+        <button class="settings-chip atmosphere-option" type="button" data-atmosphere="rain" aria-pressed="false" aria-label="Дождь" title="Дождь">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7.5 11.5a3.5 3.5 0 0 1 6.8-1.1 3.2 3.2 0 0 1 4.2 4.8H8.8a2.8 2.8 0 0 1-1.3-3.7z"></path><path d="M9 17.2v2.1M12 16.4v2.1M15 17.2v2.1"></path></svg>
+        </button>
       </div>
-    </div>
-    <div class="settings-group">
-      <p class="settings-label">Фон</p>
-      <div class="settings-options">
-        <button class="settings-option paper-option" type="button" data-paper="gray" aria-pressed="true">Чёрная бумага</button>
-        <button class="settings-option paper-option" type="button" data-paper="beige" aria-pressed="false">Тёплая бумага</button>
+      <div class="settings-divider" aria-hidden="true"></div>
+      <div class="settings-group settings-group--paper" role="group" aria-label="Фон">
+        <button class="settings-chip paper-option" type="button" data-paper="gray" aria-pressed="true" aria-label="Чёрная бумага" title="Чёрная бумага">
+          <span class="paper-swatch paper-swatch--dark" aria-hidden="true"></span>
+        </button>
+        <button class="settings-chip paper-option" type="button" data-paper="beige" aria-pressed="false" aria-label="Тёплая бумага" title="Тёплая бумага">
+          <span class="paper-swatch paper-swatch--warm" aria-hidden="true"></span>
+        </button>
       </div>
     </div>
   </aside>
