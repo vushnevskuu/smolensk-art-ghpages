@@ -270,7 +270,10 @@
         transform 180ms var(--ease),
         box-shadow 180ms ease;
     }
-    .settings-chip[hidden] { display: none; }
+    .settings-chip[hidden],
+    .settings-chip.is-unavailable {
+      display: none !important;
+    }
     .settings-chip svg {
       width: 18px;
       height: 18px;
@@ -1180,7 +1183,10 @@
 
     function syncSunAvailability(paperMode) {
       const sunOption = document.querySelector('.atmosphere-option[data-atmosphere="sun"]');
-      if (sunOption) sunOption.hidden = paperMode === "gray";
+      if (!sunOption) return;
+      const hide = paperMode === "gray";
+      sunOption.hidden = hide;
+      sunOption.classList.toggle("is-unavailable", hide);
     }
 
     function setAtmosphere(mode, fromUser) {
