@@ -200,7 +200,7 @@
       z-index: 10;
       display: grid;
       grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-      height: calc(100dvh - var(--footer-height));
+      height: 100dvh;
     }
 
     .article-index,
@@ -244,7 +244,7 @@
     .index-search.has-value .index-search-input {
       padding-right: clamp(28px, 3vw, 40px);
     }
-    .index-search-input::placeholder { color: var(--muted); opacity: 1; }
+    .index-search-input::placeholder { color: inherit; opacity: 1; }
     .index-search-input::-webkit-search-cancel-button,
     .index-search-input::-webkit-search-decoration,
     .index-search-input::-moz-search-clear-button {
@@ -258,15 +258,15 @@
       right: 0;
       width: clamp(22px, 2.2vw, 30px);
       height: clamp(22px, 2.2vw, 30px);
-      color: var(--text);
+      color: var(--muted);
       font-size: clamp(22px, 2.2vw, 30px);
-      font-weight: 700;
+      font-weight: 500;
       line-height: 1;
-      opacity: 0.72;
+      opacity: 0.67;
       transform: translateY(-50%);
       transition: opacity 180ms ease, transform 180ms var(--ease);
     }
-    .index-search-clear:hover { opacity: 1; }
+    .index-search-clear:hover { color: var(--text); opacity: 1; }
     .index-search-clear:active { transform: translateY(-50%) scale(0.94); }
     .index-list { list-style: none; }
     .index-item + .index-item { margin-top: 43px; }
@@ -456,6 +456,18 @@
       padding: 14px 0 18px;
       text-align: center;
       pointer-events: none;
+      opacity: 0;
+      visibility: hidden;
+      transform: translateY(100%);
+      transition:
+        opacity 260ms var(--ease),
+        transform 320ms var(--ease),
+        visibility 260ms ease;
+    }
+    .site-footer.is-visible {
+      opacity: 1;
+      visibility: visible;
+      transform: translateY(0);
     }
     .header-title,
     .footer-statement {
@@ -553,9 +565,10 @@
         line-height: 1.5;
       }
       .site-footer {
-        position: static;
-        min-height: 0;
-        padding: 30px 18px 40px;
+        position: fixed;
+        inset: auto 0 0;
+        min-height: var(--footer-height);
+        padding: 14px 18px 18px;
       }
       .header-title,
       .footer-statement {
@@ -1049,6 +1062,7 @@
         document.getElementById("article-back").addEventListener("click", closeMobileArticle);
         const articleView = document.getElementById("article-view");
         articleView.scrollTop = 0;
+        syncFooterVisibility();
         if (window.matchMedia("(max-width: 768px)").matches) {
           document.body.classList.add("mobile-reading");
           window.scrollTo({ top: 0, behavior: "instant" });
@@ -1071,6 +1085,7 @@
             });
           });
         }
+        window.requestAnimationFrame(syncFooterVisibility);
       }, 120);
       if (updateHash) history.replaceState(null, "", `#article=${encodeURIComponent(article.id)}`);
     }
