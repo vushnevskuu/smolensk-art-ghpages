@@ -69,6 +69,31 @@ function adminCallbackUrl() {
   return `${url.origin}${url.pathname}`;
 }
 
+function readAuthParams() {
+  const fromSearch = new URLSearchParams(window.location.search);
+  const userId = fromSearch.get("userId");
+  const secret = fromSearch.get("secret");
+  if (userId && secret) {
+    return { userId, secret };
+  }
+
+  const hash = window.location.hash.replace(/^#/, "");
+  if (!hash) {
+    return { userId: null, secret: null };
+  }
+  const fromHash = new URLSearchParams(
+    hash.startsWith("?") ? hash.slice(1) : hash,
+  );
+  return {
+    userId: fromHash.get("userId"),
+    secret: fromHash.get("secret"),
+  };
+}
+
+function hasAuthorLabel(activeUser: AppwriteUser) {
+  return (activeUser.labels ?? []).includes("author");
+}
+
 const blockIcons: Record<ContentBlockType, typeof Type> = {
   text: Type,
   image: FileImage,
@@ -80,6 +105,9 @@ const blockIcons: Record<ContentBlockType, typeof Type> = {
 export function EditorialAdminDashboard() {
   const [user, setUser] = useState<AppwriteUser | null>(null);
   const [email, setEmail] = useState("");
+  const [otpCode, setOtpCode] = useState("");
+  const [pendingUserId, setPendingUserId] = useState("");
+  const [authStep, setAuthStep] = useState<"email" | "otp">("email");
   const [authMessage, setAuthMessage] = useState("");
   const [loadingSession, setLoadingSession] = useState(true);
   const [posts, setPosts] = useState<PostRow[]>([]);
@@ -148,6 +176,19 @@ export function EditorialAdminDashboard() {
     });
   }, []);
 
+  const activateAuthorSession = useCallback(
+    async (activeUser: AppwriteUser) => {
+      if (!hasAuthorLabel(activeUser)) {
+        await account.deleteSession({ sessionId: "current" });
+        throw new Error("NOT_AUTHOR");
+      }
+      setUser(activeUser);
+      await ensureProfile(activeUser);
+      await loadPosts(activeUser);
+    },
+    [ensureProfile, loadPosts],
+  );
+
   useEffect(() => {
     if (!isAppwriteConfigured) {
       setLoadingSession(false);
@@ -156,9 +197,7 @@ export function EditorialAdminDashboard() {
     let cancelled = false;
     async function initialize() {
       try {
-        const params = new URLSearchParams(window.location.search);
-        const userId = params.get("userId");
-        const secret = params.get("secret");
+        const { userId, secret } = readAuthParams();
         if (userId && secret) {
           try {
             await account.createSession({ userId, secret });
@@ -166,7 +205,7 @@ export function EditorialAdminDashboard() {
           } catch (error) {
             if (!cancelled) {
               setAuthMessage(
-                `Ссылка для входа не сработала: ${errorMessage(error)}. Запросите новую.`,
+                `Ссылка для входа не сработала: ${errorMessage(error)}. Запросите новый код.`,
               );
             }
             return;
@@ -180,7 +219,7 @@ export function EditorialAdminDashboard() {
           return;
         }
 
-        if (!activeUser.labels.includes("author")) {
+        if (!hasAuthorLabel(activeUser)) {
           await account.deleteSession({ sessionId: "current" });
           if (!cancelled) {
             setAuthMessage(
@@ -191,13 +230,17 @@ export function EditorialAdminDashboard() {
         }
 
         if (cancelled) return;
-        setUser(activeUser);
-        await ensureProfile(activeUser);
-        await loadPosts(activeUser);
+        await activateAuthorSession(activeUser);
       } catch (error) {
         if (!cancelled) {
           setUser(null);
-          setAuthMessage(`Не удалось войти: ${errorMessage(error)}`);
+          if (error instanceof Error && error.message === "NOT_AUTHOR") {
+            setAuthMessage(
+              "Этот email не приглашён как автор. Попросите администратора выполнить приглашение.",
+            );
+          } else {
+            setAuthMessage(`Не удалось войти: ${errorMessage(error)}`);
+          }
         }
       } finally {
         if (!cancelled) setLoadingSession(false);
@@ -207,22 +250,54 @@ export function EditorialAdminDashboard() {
     return () => {
       cancelled = true;
     };
-  }, [ensureProfile, loadPosts]);
+  }, [activateAuthorSession]);
 
-  async function requestMagicLink(event: FormEvent<HTMLFormElement>) {
+  async function requestEmailCode(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setBusy(true);
     setAuthMessage("");
     try {
-      await account.createMagicURLToken({
+      const token = await account.createEmailToken({
         userId: ID.unique(),
         email: email.trim(),
-        url: adminCallbackUrl(),
       });
-      setAuthMessage("Ссылка для входа отправлена. Проверьте почту.");
-    } catch {
+      setPendingUserId(token.userId);
+      setOtpCode("");
+      setAuthStep("otp");
       setAuthMessage(
-        "Вход не разрешён. Администратор должен заранее пригласить этот email.",
+        "Код для входа отправлен на почту. Введите его ниже (действует 15 минут).",
+      );
+    } catch (error) {
+      setAuthMessage(
+        `Не удалось отправить код: ${errorMessage(error)}. Проверьте email или попросите приглашение.`,
+      );
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function submitEmailCode(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    if (!pendingUserId) {
+      setAuthMessage("Сначала запросите код на почту.");
+      setAuthStep("email");
+      return;
+    }
+    setBusy(true);
+    setAuthMessage("");
+    try {
+      await account.createSession({
+        userId: pendingUserId,
+        secret: otpCode.trim(),
+      });
+      const activeUser = await account.get();
+      await activateAuthorSession(activeUser);
+      setAuthStep("email");
+      setPendingUserId("");
+      setOtpCode("");
+    } catch (error) {
+      setAuthMessage(
+        `Код не подошёл: ${errorMessage(error)}. Запросите новый код.`,
       );
     } finally {
       setBusy(false);
@@ -560,36 +635,83 @@ export function EditorialAdminDashboard() {
           </p>
           <h1 className="mt-3 text-3xl font-medium tracking-tight">Публикации</h1>
           <p className="mt-3 text-sm leading-6 text-black/65">
-            Введите приглашённый email. Мы отправим одноразовую ссылку для
-            входа.
+            Введите приглашённый email. Мы отправим одноразовый код для входа.
           </p>
-          <form className="mt-8 space-y-4" onSubmit={requestMagicLink}>
-            <label className="block text-sm font-medium" htmlFor="email">
-              Email
-            </label>
-            <input
-              id="email"
-              type="email"
-              required
-              autoComplete="email"
-              value={email}
-              onChange={(event) => setEmail(event.target.value)}
-              className="w-full border border-black/20 bg-white px-4 py-3 outline-none transition focus:border-black"
-              placeholder="author@example.com"
-            />
-            <button
-              type="submit"
-              disabled={busy}
-              className="flex w-full items-center justify-center gap-2 bg-black px-4 py-3 text-sm font-medium text-white transition hover:bg-black/80 disabled:opacity-50"
-            >
-              {busy ? (
-                <LoaderCircle className="size-4 animate-spin" />
-              ) : (
-                <Send className="size-4" />
-              )}
-              Получить ссылку
-            </button>
-          </form>
+          {authStep === "email" ? (
+            <form className="mt-8 space-y-4" onSubmit={requestEmailCode}>
+              <label className="block text-sm font-medium" htmlFor="email">
+                Email
+              </label>
+              <input
+                id="email"
+                type="email"
+                required
+                autoComplete="email"
+                value={email}
+                onChange={(event) => setEmail(event.target.value)}
+                className="w-full border border-black/20 bg-white px-4 py-3 outline-none transition focus:border-black"
+                placeholder="author@example.com"
+              />
+              <button
+                type="submit"
+                disabled={busy}
+                className="flex w-full items-center justify-center gap-2 bg-black px-4 py-3 text-sm font-medium text-white transition hover:bg-black/80 disabled:opacity-50"
+              >
+                {busy ? (
+                  <LoaderCircle className="size-4 animate-spin" />
+                ) : (
+                  <Send className="size-4" />
+                )}
+                Получить код
+              </button>
+            </form>
+          ) : (
+            <form className="mt-8 space-y-4" onSubmit={submitEmailCode}>
+              <p className="text-sm text-black/65">
+                Код отправлен на{" "}
+                <span className="font-medium text-black">{email}</span>
+              </p>
+              <label className="block text-sm font-medium" htmlFor="otp">
+                Код из письма
+              </label>
+              <input
+                id="otp"
+                type="text"
+                required
+                inputMode="numeric"
+                autoComplete="one-time-code"
+                value={otpCode}
+                onChange={(event) => setOtpCode(event.target.value)}
+                className="w-full border border-black/20 bg-white px-4 py-3 tracking-[0.2em] outline-none transition focus:border-black"
+                placeholder="123456"
+              />
+              <button
+                type="submit"
+                disabled={busy}
+                className="flex w-full items-center justify-center gap-2 bg-black px-4 py-3 text-sm font-medium text-white transition hover:bg-black/80 disabled:opacity-50"
+              >
+                {busy ? (
+                  <LoaderCircle className="size-4 animate-spin" />
+                ) : (
+                  <Check className="size-4" />
+                )}
+                Войти
+              </button>
+              <button
+                type="button"
+                disabled={busy}
+                onClick={() => {
+                  setAuthStep("email");
+                  setPendingUserId("");
+                  setOtpCode("");
+                  setAuthMessage("");
+                }}
+                className="w-full px-4 py-2 text-sm text-black/60 transition hover:text-black disabled:opacity-50"
+              >
+                Другой email
+              </button>
+            </form>
+          )}
           {authMessage && (
             <p className="mt-4 bg-black/5 p-3 text-sm">{authMessage}</p>
           )}
