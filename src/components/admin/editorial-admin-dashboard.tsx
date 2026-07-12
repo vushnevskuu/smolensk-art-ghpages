@@ -59,6 +59,16 @@ import {
 
 type AppwriteUser = Models.User<Models.Preferences>;
 
+function adminCallbackUrl() {
+  const url = new URL(window.location.href);
+  url.search = "";
+  url.hash = "";
+  if (!url.pathname.endsWith("/")) {
+    url.pathname = `${url.pathname}/`;
+  }
+  return `${url.origin}${url.pathname}`;
+}
+
 const blockIcons: Record<ContentBlockType, typeof Type> = {
   text: Type,
   image: FileImage,
@@ -150,20 +160,45 @@ export function EditorialAdminDashboard() {
         const userId = params.get("userId");
         const secret = params.get("secret");
         if (userId && secret) {
-          await account.createSession({ userId, secret });
-          window.history.replaceState({}, "", window.location.pathname);
+          try {
+            await account.createSession({ userId, secret });
+            window.history.replaceState({}, "", adminCallbackUrl());
+          } catch (error) {
+            if (!cancelled) {
+              setAuthMessage(
+                `Ссылка для входа не сработала: ${errorMessage(error)}. Запросите новую.`,
+              );
+            }
+            return;
+          }
         }
-        const activeUser = await account.get();
+
+        let activeUser: AppwriteUser;
+        try {
+          activeUser = await account.get();
+        } catch {
+          return;
+        }
+
         if (!activeUser.labels.includes("author")) {
           await account.deleteSession({ sessionId: "current" });
-          throw new Error("Пользователь не приглашён");
+          if (!cancelled) {
+            setAuthMessage(
+              "Этот email не приглашён как автор. Попросите администратора выполнить приглашение.",
+            );
+          }
+          return;
         }
+
         if (cancelled) return;
         setUser(activeUser);
         await ensureProfile(activeUser);
         await loadPosts(activeUser);
-      } catch {
-        if (!cancelled) setUser(null);
+      } catch (error) {
+        if (!cancelled) {
+          setUser(null);
+          setAuthMessage(`Не удалось войти: ${errorMessage(error)}`);
+        }
       } finally {
         if (!cancelled) setLoadingSession(false);
       }
@@ -182,7 +217,7 @@ export function EditorialAdminDashboard() {
       await account.createMagicURLToken({
         userId: ID.unique(),
         email: email.trim(),
-        url: `${window.location.origin}${window.location.pathname}`,
+        url: adminCallbackUrl(),
       });
       setAuthMessage("Ссылка для входа отправлена. Проверьте почту.");
     } catch {
