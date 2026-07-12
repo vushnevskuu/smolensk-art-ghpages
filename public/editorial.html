@@ -1177,6 +1177,11 @@
       });
     }
 
+    function syncSunAvailability(paperMode) {
+      const sunOption = document.querySelector('.atmosphere-option[data-atmosphere="sun"]');
+      if (sunOption) sunOption.hidden = paperMode === "gray";
+    }
+
     function setAtmosphere(mode, fromUser) {
       stopAtmosphereMedia();
       document.body.classList.remove("theme-dark", "theme-rain", "atmosphere-sun", "atmosphere-night", "atmosphere-rain");
@@ -1211,6 +1216,10 @@
         button.setAttribute("aria-pressed", button.dataset.paper === mode ? "true" : "false");
       });
       localStorage.setItem(PAPER_KEY, mode);
+      syncSunAvailability(mode);
+      if (mode === "gray" && localStorage.getItem(ATMOSPHERE_KEY) === "sun") {
+        setAtmosphere("plain", false);
+      }
     }
 
     function initSettings() {
@@ -1240,8 +1249,11 @@
         option.addEventListener("click", () => setPaper(option.dataset.paper));
       });
       setPaper(localStorage.getItem(PAPER_KEY) === "beige" ? "beige" : "gray");
-      const savedAtmosphere = localStorage.getItem(ATMOSPHERE_KEY);
-      setAtmosphere(["plain", "sun", "night", "rain"].includes(savedAtmosphere) ? savedAtmosphere : "plain", false);
+      const paperMode = localStorage.getItem(PAPER_KEY) === "beige" ? "beige" : "gray";
+      let savedAtmosphere = localStorage.getItem(ATMOSPHERE_KEY);
+      if (!["plain", "sun", "night", "rain"].includes(savedAtmosphere)) savedAtmosphere = "plain";
+      if (paperMode === "gray" && savedAtmosphere === "sun") savedAtmosphere = "plain";
+      setAtmosphere(savedAtmosphere, false);
     }
 
     function initSearch() {
