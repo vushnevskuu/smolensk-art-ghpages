@@ -713,6 +713,8 @@
         margin-bottom: 28px;
       }
       .settings-panel { top: calc(var(--header-height) - 4px); right: 14px; }
+      .settings-group--atmosphere,
+      .settings-divider { display: none !important; }
       .settings-toolbar { gap: 8px; padding: 7px 8px; }
       .settings-chip { width: 34px; height: 34px; }
       .archive-layout {
@@ -1307,6 +1309,10 @@
       });
     }
 
+    function isMobileViewport() {
+      return window.matchMedia("(max-width: 768px)").matches;
+    }
+
     function syncSunAvailability(paperMode) {
       const sunOption = document.querySelector('.atmosphere-option[data-atmosphere="sun"]');
       if (!sunOption) return;
@@ -1316,6 +1322,10 @@
     }
 
     function setAtmosphere(mode, fromUser) {
+      if (isMobileViewport()) {
+        mode = "plain";
+        fromUser = false;
+      }
       stopAtmosphereMedia();
       document.body.classList.remove("theme-dark", "theme-rain", "atmosphere-sun", "atmosphere-night", "atmosphere-rain");
       if (mode === "sun") {
@@ -1395,7 +1405,11 @@
       let savedAtmosphere = localStorage.getItem(ATMOSPHERE_KEY);
       if (!["plain", "sun", "night", "rain"].includes(savedAtmosphere)) savedAtmosphere = "plain";
       if (paperMode === "gray" && savedAtmosphere === "sun") savedAtmosphere = "plain";
+      if (isMobileViewport()) savedAtmosphere = "plain";
       setAtmosphere(savedAtmosphere, false);
+      window.matchMedia("(max-width: 768px)").addEventListener("change", event => {
+        if (event.matches) setAtmosphere("plain", false);
+      });
     }
 
     function initSearch() {
