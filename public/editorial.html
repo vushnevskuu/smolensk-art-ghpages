@@ -110,7 +110,10 @@
       background: transparent;
     }
 
-    .header-logo { justify-self: start; }
+    .header-logo {
+      justify-self: center;
+      pointer-events: auto;
+    }
     .brand-logo {
       display: block;
       width: 64px;
@@ -119,46 +122,81 @@
       opacity: 0.9;
     }
     body.paper-beige .brand-logo { filter: none; }
-    .header-title {
-      justify-self: center;
-      color: var(--text);
-      font-weight: 700;
-      line-height: 1.05;
-      letter-spacing: -0.035em;
-      text-transform: uppercase;
-      white-space: nowrap;
+    .header-search {
+      justify-self: start;
+      min-width: 0;
+      width: 100%;
+      max-width: min(100%, 420px);
+      pointer-events: auto;
     }
+    .header-search-wrap {
+      position: relative;
+      display: block;
+    }
+    .header-search-wrap.has-value .header-search-input {
+      padding-right: clamp(24px, 2.5vw, 34px);
+    }
+    .header-search-input {
+      width: 100%;
+      padding: 0;
+      border: 0;
+      border-radius: 0;
+      outline: 0;
+      background: transparent;
+      color: var(--muted);
+      font-size: calc(var(--index-heading-size) * var(--index-font-scale));
+      font-weight: 500;
+      line-height: 1.08;
+      letter-spacing: -0.035em;
+      opacity: 0.67;
+      transition: color 180ms ease, opacity 180ms ease;
+    }
+    .header-search-input:focus,
+    .header-search-wrap.has-value .header-search-input {
+      color: var(--text);
+      opacity: 1;
+    }
+    .header-search-input::placeholder { color: inherit; opacity: 1; }
+    .header-search-clear {
+      position: absolute;
+      top: 50%;
+      right: 0;
+      width: clamp(18px, 2vw, 24px);
+      height: clamp(18px, 2vw, 24px);
+      color: var(--muted);
+      font-size: clamp(18px, 2vw, 24px);
+      font-weight: 500;
+      line-height: 1;
+      opacity: 0.67;
+      transform: translateY(-50%);
+      transition: color 180ms ease, opacity 180ms ease, transform 180ms var(--ease);
+    }
+    .header-search-clear:hover { color: var(--text); opacity: 1; }
+    .header-search-clear:active { transform: translateY(-50%) scale(0.94); }
     .header-actions {
       justify-self: end;
       display: flex;
       align-items: center;
-      gap: 8px;
+      gap: clamp(14px, 2.4vw, 28px);
       pointer-events: auto;
     }
-    .header-icon {
-      display: inline-grid;
-      width: 44px;
-      height: 44px;
-      place-items: center;
+    .header-link {
       color: var(--muted);
+      font-size: calc(var(--index-heading-size) * var(--index-font-scale));
+      font-weight: 500;
+      line-height: 1.08;
+      letter-spacing: -0.035em;
+      opacity: 0.67;
       text-decoration: none;
-      transition: transform 180ms var(--ease);
+      white-space: nowrap;
+      transition: color 180ms ease, opacity 180ms ease, transform 180ms var(--ease);
     }
-    .header-icon-image {
-      width: 27px;
-      height: 27px;
-      object-fit: contain;
-      filter: brightness(0) invert(1) contrast(1.18);
-      opacity: 0.72;
-      transition: filter 180ms ease, opacity 180ms ease, transform 180ms var(--ease);
-    }
-    body.paper-beige .header-icon-image { filter: brightness(0) contrast(1.18); }
-    .header-icon:hover .header-icon-image,
-    .header-icon[aria-expanded="true"] .header-icon-image {
+    .header-link:hover,
+    .header-link[aria-expanded="true"] {
+      color: var(--text);
       opacity: 1;
-      transform: scale(1.1);
     }
-    .header-icon:active { transform: scale(0.94); }
+    .header-link:active { transform: scale(0.98); }
 
     .settings-panel {
       position: fixed;
@@ -216,58 +254,6 @@
     .article-index {
       padding: calc(var(--header-height) + 25px) 32px 180px;
     }
-    .index-search {
-      position: relative;
-      display: block;
-      margin-bottom: clamp(34px, 4vw, 52px);
-    }
-    .index-search-input {
-      width: 100%;
-      padding: 0;
-      border: 0;
-      border-radius: 0;
-      outline: 0;
-      background: transparent;
-      color: var(--muted);
-      font-size: calc(var(--index-heading-size) * var(--index-font-scale));
-      font-weight: 500;
-      line-height: 1.08;
-      letter-spacing: -0.035em;
-      opacity: 0.67;
-      transition: color 180ms ease, opacity 180ms ease;
-    }
-    .index-search-input:focus,
-    .index-search.has-value .index-search-input {
-      color: var(--text);
-      opacity: 1;
-    }
-    .index-search.has-value .index-search-input {
-      padding-right: clamp(28px, 3vw, 40px);
-    }
-    .index-search-input::placeholder { color: inherit; opacity: 1; }
-    .index-search-input::-webkit-search-cancel-button,
-    .index-search-input::-webkit-search-decoration,
-    .index-search-input::-moz-search-clear-button {
-      display: none;
-      appearance: none;
-      -webkit-appearance: none;
-    }
-    .index-search-clear {
-      position: absolute;
-      top: 50%;
-      right: 0;
-      width: clamp(22px, 2.2vw, 30px);
-      height: clamp(22px, 2.2vw, 30px);
-      color: var(--muted);
-      font-size: clamp(22px, 2.2vw, 30px);
-      font-weight: 500;
-      line-height: 1;
-      opacity: 0.67;
-      transform: translateY(-50%);
-      transition: opacity 180ms ease, transform 180ms var(--ease);
-    }
-    .index-search-clear:hover { color: var(--text); opacity: 1; }
-    .index-search-clear:active { transform: translateY(-50%) scale(0.94); }
     .index-list { list-style: none; }
     .index-item + .index-item { margin-top: 43px; }
     .index-button {
@@ -469,7 +455,6 @@
       visibility: visible;
       transform: translateY(0);
     }
-    .header-title,
     .footer-statement {
       font-size: clamp(22px, 2.3vw, 34px);
     }
@@ -521,14 +506,13 @@
       .site-header {
         position: fixed;
         height: var(--header-height);
-        grid-template-columns: 48px minmax(0, 1fr) auto;
+        grid-template-columns: minmax(0, 1fr) auto minmax(0, auto);
         gap: 10px;
         padding: 12px 14px;
       }
+      .header-search { max-width: none; }
       .brand-logo { width: 46px; }
-      .header-actions { gap: 0; }
-      .header-icon { width: 38px; height: 38px; }
-      .header-icon-image { width: 24px; height: 24px; }
+      .header-actions { gap: 10px; }
       .settings-panel { top: 74px; right: 14px; }
       .archive-layout {
         display: block;
@@ -543,7 +527,6 @@
       .article-index {
         padding: calc(var(--header-height) + 28px) 18px 180px;
       }
-      .index-search { margin-bottom: 36px; }
       .index-item + .index-item { margin-top: 36px; }
       .index-title {
         padding-left: 28px;
@@ -570,7 +553,6 @@
         min-height: var(--footer-height);
         padding: 14px 18px 18px;
       }
-      .header-title,
       .footer-statement {
         font-size: clamp(16px, 5vw, 21px);
       }
@@ -583,17 +565,18 @@
 </head>
 <body>
   <header class="site-header">
+    <div class="header-search">
+      <label class="header-search-wrap" id="article-search-wrap">
+        <input class="header-search-input" id="article-search" type="text" role="searchbox" enterkeyhint="search" placeholder="Поиск" autocomplete="off" aria-label="Поиск по публикациям">
+        <button class="header-search-clear" id="article-search-clear" type="button" hidden aria-label="Очистить поиск">×</button>
+      </label>
+    </div>
     <div class="header-logo">
       <img class="brand-logo" src="smolensk-logo.svg" alt="Смоленск Арт" width="79" height="40">
     </div>
-    <p class="header-title">Смоленск Арт</p>
     <div class="header-actions">
-      <a class="header-icon" href="https://t.me/smolenskart" target="_blank" rel="noopener noreferrer" aria-label="Телеграм-канал">
-        <img class="header-icon-image telegram-icon-image" src="telegram-drawn.png" alt="">
-      </a>
-      <button class="header-icon" id="settings-button" type="button" aria-label="Эффекты и атмосфера" aria-expanded="false" aria-controls="settings-panel">
-        <img class="header-icon-image" src="sun-drawn.png" alt="">
-      </button>
+      <a class="header-link" href="https://t.me/smolenskart" target="_blank" rel="noopener noreferrer">телеграм</a>
+      <button class="header-link" id="settings-button" type="button" aria-label="Эффекты и атмосфера" aria-expanded="false" aria-controls="settings-panel">атмосфера</button>
     </div>
   </header>
 
@@ -618,10 +601,6 @@
 
   <main class="archive-layout">
     <nav class="article-index" aria-label="Список статей">
-      <label class="index-search" id="article-search-wrap">
-        <input class="index-search-input" id="article-search" type="text" role="searchbox" enterkeyhint="search" placeholder="Поиск" autocomplete="off" aria-label="Поиск по публикациям">
-        <button class="index-search-clear" id="article-search-clear" type="button" hidden aria-label="Очистить поиск">×</button>
-      </label>
       <div class="status-message" id="index-status">загрузка_</div>
       <ol class="index-list" id="index-list"></ol>
     </nav>
